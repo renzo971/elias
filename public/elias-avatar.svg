@@ -27,4 +27,8 @@
       <stop offset="100%" style="stop-color:#C19A6B;stop-opacity:0.6" />
     </linearGradient>
   </defs>
+  
+  <!-- Resplandor exterior -->
+  <circle cx="50" cy="50" r="20" fill="none" stroke="#C19A6B" stroke-width="0.5" opacity="0.3"/>
+  <circle cx="50" cy="50" r="30" fill="none" stroke="#C19A6B" stroke-width="0.3" opacity="0.2"/>
 </svg>
