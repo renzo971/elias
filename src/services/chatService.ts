@@ -1,7 +1,7 @@
 export async function chatWithElias(
   message: string, 
   history: any[] = [],
-  onChunk?: (content: string, reasoning: string) => void
+  onChunk?: (content: string, reasoning: string, data?: any) => void
 ): Promise<string> {
   const response = await fetch('/api/chat', {
     method: 'POST',

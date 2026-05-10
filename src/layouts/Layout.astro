@@ -1,27 +1,56 @@
 ---
 import "../styles/global.css";
+
+const siteUrl = "https://elias-theology.vercel.app"; // Reemplazar con el real
+const title = "ELIAS - Protocolo de Inteligencia Teológica Bautista";
+const description = "Mentor teológico avanzado basado en la Confesión de Fe de Londres de 1689. Exégesis bíblica y doctrina bautista con rigor histórico y pastoral.";
 ---
 
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={siteUrl} />
     
-    <title>ELIAS - Mentor Teológico Bautista e Inteligencia Artificial</title>
-    <meta name="description" content="ELIAS: Inteligencia Artificial especializada en doctrina bautista, exégesis bíblica y la Confesión de Fe de Londres de 1689." />
+    <title>{title}</title>
+    <meta name="description" content={description} />
     
-    <meta property="og:title" content="ELIAS - Mentor Teológico Bautista" />
-    <meta property="og:description" content="Consulta las Escrituras y la doctrina bautista con la ayuda de Elias." />
+    <!-- Open Graph -->
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={siteUrl} />
+    <meta property="og:image" content={`${siteUrl}/og-image.png`} />
     
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json" is:inline>
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "ELIAS",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "Web",
+        "description": "Asistente teológico bautista basado en IA.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
   </head>
-  <body class="bg-midnight-blue selection:bg-old-gold selection:text-midnight-blue">
+  <body>
     <slot />
   </body>
 </html>

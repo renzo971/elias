@@ -1,13 +1,20 @@
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-accent: #6366f1;
+  --color-ethereal: #f0f9ff;
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+}
+
 :root {
-  --bg-base: #030305;
-  --bg-panel: rgba(20, 20, 25, 0.6);
-  --accent-primary: #E5B05C; /* Elegant modern gold */
-  --accent-glow: rgba(229, 176, 92, 0.15);
-  --text-main: #F3F4F6;
-  --text-muted: #9CA3AF;
-  --border-subtle: rgba(255, 255, 255, 0.06);
+  --primary: #3b82f6;
+  --accent: #6366f1;
+  --ethereal: #f0f9ff;
+  --glass: rgba(15, 23, 42, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
 }
 
 * {
@@ -17,103 +24,90 @@
 }
 
 html, body {
-  height: 100%;
-  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+  background-color: #020617;
+  color: #f1f5f9;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* Prevent body scroll */
 }
 
-body {
-  font-family: 'Inter', sans-serif;
-  background-color: var(--bg-base);
-  color: var(--text-main);
-  background-image: 
-    radial-gradient(circle at 50% -20%, var(--accent-glow) 0%, transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(255, 255, 255, 0.02) 0%, transparent 50%);
-  background-attachment: fixed;
-}
-
-@keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(20px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes floatGlow {
-  0%, 100% { filter: drop-shadow(0 0 10px rgba(229, 176, 92, 0.2)); transform: translateY(0); }
-  50% { filter: drop-shadow(0 0 20px rgba(229, 176, 92, 0.4)); transform: translateY(-3px); }
-}
-
-.animate-message-in {
-  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-fade-in {
-  animation: slideUpFade 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.glass-panel {
-  background: var(--bg-panel);
+.glass-morphism {
+  background: var(--glass);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border: 1px solid var(--border-subtle);
-  box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid var(--glass-border);
 }
 
-.modern-glow {
-  animation: floatGlow 4s ease-in-out infinite;
+.glass-card {
+  background: rgba(30, 41, 59, 0.4);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.bible-verse {
-  display: block;
-  font-style: italic;
-  background: linear-gradient(90deg, rgba(229, 176, 92, 0.08) 0%, transparent 100%);
-  border-left: 2px solid var(--accent-primary);
-  padding: 0.75rem 1.25rem;
-  margin: 0.75rem 0;
-  border-radius: 0 12px 12px 0;
-  color: var(--text-main);
-  font-size: 0.95rem;
-  line-height: 1.7;
+.glass-card:hover {
+  background: rgba(30, 41, 59, 0.6);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-4px);
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+.animate-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .typing-cursor::after {
   content: '';
   display: inline-block;
-  width: 4px;
+  width: 3px;
   height: 1.2em;
-  background-color: var(--accent-primary);
+  background-color: #3b82f6;
   margin-left: 4px;
   vertical-align: middle;
-  border-radius: 2px;
-  animation: blink 1s infinite cubic-bezier(0.4, 0, 0.2, 1);
+  animation: blink 1.2s step-end infinite;
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; transform: scaleY(1); }
-  50% { opacity: 0; transform: scaleY(0.8); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
-/* Premium Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
+/* Custom Scrollbar for the main area */
+.chat-scroll::-webkit-scrollbar {
+  width: 5px;
 }
 
-::-webkit-scrollbar-track {
+.chat-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.bubble-user {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 4px 15px -3px rgba(37, 99, 235, 0.3);
+}
+
+.bubble-assistant {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
