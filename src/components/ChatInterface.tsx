@@ -62,22 +62,22 @@ export default function ChatInterface() {
 
     try {
       const history = messages.slice(-6).map(m => ({ role: m.role, content: m.content }));
-      
+
       let currentContent = '';
       let currentReasoning = '';
 
       await chatWithElias(userMessage.content, history, (content: string, reasoning: string, data?: any) => {
         if (data?.is_final) {
-          setMessages(prev => prev.map(msg => 
-            msg.id === assistantMessageId 
-              ? { 
-                  ...msg, 
-                  content: data.answer || msg.content,
-                  scriptures: data.scripture,
-                  theologians: data.baptist_theologians,
-                  principle: data.baptist_principle,
-                  tags: data.tags
-                }
+          setMessages(prev => prev.map(msg =>
+            msg.id === assistantMessageId
+              ? {
+                ...msg,
+                content: data.answer || msg.content,
+                scriptures: data.scripture,
+                theologians: data.baptist_theologians,
+                principle: data.baptist_principle,
+                tags: data.tags
+              }
               : msg
           ));
           return;
@@ -86,8 +86,8 @@ export default function ChatInterface() {
         if (content) currentContent += content;
         if (reasoning) currentReasoning += reasoning;
 
-        setMessages(prev => prev.map(msg => 
-          msg.id === assistantMessageId 
+        setMessages(prev => prev.map(msg =>
+          msg.id === assistantMessageId
             ? { ...msg, content: currentContent, reasoning: currentReasoning }
             : msg
         ));
@@ -96,8 +96,8 @@ export default function ChatInterface() {
       saveChatToLocalStorage(userMessage.content, currentContent);
     } catch (error) {
       console.error('Error:', error);
-      setMessages(prev => prev.map(msg => 
-        msg.id === assistantMessageId 
+      setMessages(prev => prev.map(msg =>
+        msg.id === assistantMessageId
           ? { ...msg, content: 'Ha ocurrido un error en la conexión. Por favor, intenta nuevamente.' }
           : msg
       ));
@@ -231,7 +231,7 @@ export default function ChatInterface() {
     <div className="h-screen w-full bg-[#020617] text-slate-100 flex flex-col font-body overflow-hidden">
       {/* Background Decor */}
       <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.03] pointer-events-none" />
-      
+
       {/* Navbar Statica */}
       <header className="h-16 md:h-20 w-full flex-shrink-0 glass-morphism border-b border-white/5 px-6 flex items-center justify-between relative z-50">
         <div className="flex items-center gap-3">
@@ -299,11 +299,10 @@ export default function ChatInterface() {
                     </div>
                   )}
                   <div
-                    className={`rounded-2xl p-5 md:p-7 ${
-                      message.role === 'user'
-                        ? 'bubble-user rounded-tr-sm text-white'
-                        : 'bubble-assistant rounded-tl-sm text-slate-100'
-                    }`}
+                    className={`rounded-2xl p-5 md:p-7 ${message.role === 'user'
+                      ? 'bubble-user rounded-tr-sm text-white'
+                      : 'bubble-assistant rounded-tl-sm text-slate-100'
+                      }`}
                   >
                     <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/5">
                       <span className={`text-[9px] font-black uppercase tracking-[0.2em] ${message.role === 'user' ? 'text-blue-100' : 'text-blue-400'}`}>
