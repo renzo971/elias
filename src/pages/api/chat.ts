@@ -1,10 +1,16 @@
 import type { APIRoute } from "astro";
 import OpenAI from "openai";
 
-const SYSTEM_PROMPT = `Eres Elias, un mentor teológico bautista.
+const SYSTEM_PROMPT = `Eres Elias, un mentor teológico bautista fundamental.
 
-TU IDENTIDAD:
-Compañero de camino, cálido y pastoral. Firme en la verdad pero tierno en el trato.
+TU IDENTIDAD Y DOCTRINA:
+Eres un consejero cálido, pastoral y rigurosamente bíblico. Tu teología se alinea estrictamente con la Doctrina Bautista Fundamental.
+Afirmas incondicionalmente:
+1. La inerrancia, inspiración verbal, suficiencia y autoridad final de las Escrituras.
+2. La salvación únicamente por gracia mediante la fe en Cristo, sin obras.
+3. La seguridad eterna del creyente (una vez salvo, siempre salvo).
+4. El bautismo del creyente únicamente por inmersión.
+5. La separación eclesiástica y la autonomía de la iglesia local.
 
 INSTRUCCIONES DE FORMATO:
 1. Responde primero directamente al usuario usando Markdown. Esta es la respuesta pastoral que leerá el usuario.
@@ -20,15 +26,24 @@ INSTRUCCIONES DE FORMATO:
 }
 \`\`\`
 
-REGLAS:
-- Cita o básate en: Spurgeon, Gill, Rogers, Boyce, Piper, Mohler, Ironside, Baucham, Ascol, Grudem, Tozer, Platt, Chan.
+REGLAS ESTRICTAS:
+- Evita opiniones personales, misticismo o cualquier influencia de teología liberal, neo-ortodoxia o carismática.
+- Cita o básate EXCLUSIVAMENTE en: Spurgeon, Ryrie, Thompson, Tommy Ashcraft, Matthew Henry, Jhon MacArthur.
+- Evita errores doctrinales; la respuesta debe ser sólidamente exegética y fundamentada en la sana doctrina bautista.
 - Si el tema no es bíblico, responde amablemente y marca "is_off_topic": true en el JSON.`;
 
 export const POST: APIRoute = async ({ request }) => {
-  const nvidiaKey = import.meta.env.NVIDIA_API_KEY || import.meta.env.PUBLIC_NVIDIA_API_KEY || process.env.NVIDIA_API_KEY || process.env.PUBLIC_NVIDIA_API_KEY;
+  const nvidiaKey =
+    import.meta.env.NVIDIA_API_KEY ||
+    import.meta.env.PUBLIC_NVIDIA_API_KEY ||
+    process.env.NVIDIA_API_KEY ||
+    process.env.PUBLIC_NVIDIA_API_KEY;
 
   if (!nvidiaKey) {
-    return new Response(JSON.stringify({ error: "NVIDIA_API_KEY no configurada" }), { status: 500 });
+    return new Response(
+      JSON.stringify({ error: "NVIDIA_API_KEY no configurada" }),
+      { status: 500 },
+    );
   }
 
   const client = new OpenAI({
@@ -39,6 +54,7 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
     const question = body.question || body.message;
+    const history = body.history || [];
 
     const encoder = new TextEncoder();
     const responseStream = new ReadableStream({
@@ -48,6 +64,10 @@ export const POST: APIRoute = async ({ request }) => {
             model: "meta/llama-3.1-8b-instruct",
             messages: [
               { role: "system", content: SYSTEM_PROMPT },
+              ...history.map((h: any) => ({
+                role: h.role === "user" ? "user" : "assistant",
+                content: h.content,
+              })),
               { role: "user", content: `Pregunta: ${question}` },
             ],
             temperature: 0.3,
@@ -61,11 +81,13 @@ export const POST: APIRoute = async ({ request }) => {
             const chunkText = chunk.choices[0]?.delta?.content || "";
             if (chunkText) {
               fullResponse += chunkText;
-              
+
               // Evitamos enviar el bloque de código JSON durante el stream para que no se vea feo
               if (!fullResponse.includes("```json")) {
                 controller.enqueue(
-                  encoder.encode(`data: ${JSON.stringify({ content: chunkText })}\n\n`)
+                  encoder.encode(
+                    `data: ${JSON.stringify({ content: chunkText })}\n\n`,
+                  ),
                 );
               }
             }
@@ -75,7 +97,7 @@ export const POST: APIRoute = async ({ request }) => {
           try {
             let answer = fullResponse;
             let parsed = {};
-            
+
             if (fullResponse.includes("```json")) {
               const parts = fullResponse.split("```json");
               answer = parts[0].trim();
@@ -84,13 +106,17 @@ export const POST: APIRoute = async ({ request }) => {
             }
 
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ ...parsed, answer, is_final: true })}\n\n`)
+              encoder.encode(
+                `data: ${JSON.stringify({ ...parsed, answer, is_final: true })}\n\n`,
+              ),
             );
           } catch (e) {
             console.error("Error parseando respuesta final:", e);
             // Si falla el parseo, enviamos lo que tenemos limpiando los backticks
             controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ answer: fullResponse.replace(/```json|```/g, ''), is_final: true })}\n\n`)
+              encoder.encode(
+                `data: ${JSON.stringify({ answer: fullResponse.replace(/```json|```/g, ""), is_final: true })}\n\n`,
+              ),
             );
           }
 
@@ -98,7 +124,9 @@ export const POST: APIRoute = async ({ request }) => {
         } catch (error: any) {
           console.error("Stream error:", error);
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ error: error.message })}\n\n`)
+            encoder.encode(
+              `data: ${JSON.stringify({ error: error.message })}\n\n`,
+            ),
           );
           controller.close();
         }
@@ -113,6 +141,8 @@ export const POST: APIRoute = async ({ request }) => {
       },
     });
   } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 400,
+    });
   }
 };
