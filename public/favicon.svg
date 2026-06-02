@@ -1,30 +1,79 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" stroke="#C19A6B" stroke-width="2">
-  <!-- Llama estilizada (fuego de Elías) -->
-  <path d="M50 10C50 10 30 40 30 55C30 65 38 72 50 72C62 72 70 65 70 55C70 40 50 10 50 10Z" 
-        fill="url(#flameGradient)" 
-        stroke="#C19A6B" 
-        stroke-width="1.5"/>
-  
-  <!-- Nodo de red neuronal en el centro -->
-  <circle cx="50" cy="50" r="8" fill="none" stroke="#C19A6B" stroke-width="2"/>
-  <circle cx="50" cy="50" r="3" fill="#C19A6B"/>
-  
-  <!-- Circuitos que irradian desde el centro -->
-  <path d="M50 42V35M50 65V58M42 50H35M65 50H58" stroke="#C19A6B" stroke-width="1.5"/>
-  <circle cx="50" cy="35" r="2" fill="#C19A6B"/>
-  <circle cx="50" cy="65" r="2" fill="#C19A6B"/>
-  <circle cx="35" cy="50" r="2" fill="#C19A6B"/>
-  <circle cx="65" cy="50" r="2" fill="#C19A6B"/>
-  
-  <!-- Conexiones diagonales -->
-  <path d="M56 44L61 39M39 61L44 56M44 44L39 39M61 61L56 56" stroke="#C19A6B" stroke-width="1.5"/>
-  
-  <!-- Gradiente para la llama -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Definitions of gradients and filters -->
   <defs>
-    <linearGradient id="flameGradient" x1="0%" y1="100%" x2="0%" y2="0%">
-      <stop offset="0%" style="stop-color:#C19A6B;stop-opacity:0.2" />
-      <stop offset="50%" style="stop-color:#C19A6B;stop-opacity:0.4" />
-      <stop offset="100%" style="stop-color:#C19A6B;stop-opacity:0.6" />
+    <!-- Gold Metallic Gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#78350f" /> <!-- Dark Amber -->
+      <stop offset="30%" stop-color="#b88a3e" /> <!-- Antique Gold -->
+      <stop offset="70%" stop-color="#dfb15b" /> <!-- Bright Gold -->
+      <stop offset="100%" stop-color="#fef3c7" /> <!-- Warm Light Gold -->
     </linearGradient>
+    
+    <!-- Flame Gradient -->
+    <linearGradient id="flameGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#b45309" stop-opacity="0.9" />
+      <stop offset="50%" stop-color="#d97706" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.95" />
+    </linearGradient>
+
+    <!-- Circuit/Glow Gradient -->
+    <linearGradient id="glowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dfb15b" />
+      <stop offset="100%" stop-color="#ffffff" />
+    </linearGradient>
+    
+    <!-- Ethereal Glow Filter -->
+    <filter id="divineGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
   </defs>
+  
+  <!-- Outer Glow Ring -->
+  <circle cx="50" cy="50" r="46" stroke="url(#goldGrad)" stroke-width="1.5" stroke-dasharray="4 6" opacity="0.3" />
+  <circle cx="50" cy="50" r="42" stroke="url(#goldGrad)" stroke-width="0.75" opacity="0.2" />
+
+  <!-- The Flame of Elijah (Holy Spirit Illumination / AI Power) -->
+  <!-- Outer Flame Path -->
+  <path d="M 50,14 C 28,34 26,56 46,67 C 32,58 35,38 50,25 C 65,38 68,58 54,67 C 74,56 72,34 50,14 Z" 
+        fill="url(#flameGrad)" 
+        filter="url(#divineGlow)" 
+        opacity="0.85" />
+
+  <!-- Inner Glowing Flame -->
+  <path d="M 50,22 C 37,36 37,50 48,59 C 40,52 42,40 50,32 C 58,40 60,52 52,59 C 63,50 63,36 50,22 Z" 
+        fill="url(#goldGrad)" 
+        opacity="0.95" />
+
+  <!-- The Open Scriptures (The Foundation of Truth) -->
+  <!-- Left Page -->
+  <path d="M 50,72 C 38,68 22,68 14,73 L 14,84 C 22,79 38,79 50,83 Z" 
+        fill="url(#goldGrad)" 
+        stroke="#1c1917" 
+        stroke-width="0.5" />
+  
+  <!-- Right Page -->
+  <path d="M 50,72 C 62,68 78,68 86,73 L 86,84 C 78,79 62,79 50,83 Z" 
+        fill="url(#goldGrad)" 
+        stroke="#1c1917" 
+        stroke-width="0.5" />
+
+  <!-- Elegant page thickness pages underneath -->
+  <path d="M 14,75 C 22,70 38,70 50,74 C 62,70 78,70 86,75" stroke="url(#goldGrad)" stroke-width="1" fill="none" opacity="0.7" />
+  <path d="M 14,77 C 22,72 38,72 50,76 C 62,72 78,72 86,77" stroke="url(#goldGrad)" stroke-width="1" fill="none" opacity="0.5" />
+
+  <!-- The Tech Cross (The Gospel + AI Connection) -->
+  <!-- Vertical Cross Beam -->
+  <path d="M 50,33 L 50,56" stroke="url(#glowGrad)" stroke-width="2" stroke-linecap="round" />
+  <!-- Horizontal Cross Beam -->
+  <path d="M 43,41 L 57,41" stroke="url(#glowGrad)" stroke-width="2" stroke-linecap="round" />
+  
+  <!-- Tech Circuit Nodes (Cross terminals) -->
+  <circle cx="50" cy="31" r="2" fill="#ffffff" filter="url(#divineGlow)" />
+  <circle cx="41" cy="41" r="2" fill="#ffffff" filter="url(#divineGlow)" />
+  <circle cx="59" cy="41" r="2" fill="#ffffff" filter="url(#divineGlow)" />
+  <circle cx="50" cy="58" r="2.5" fill="#ffffff" filter="url(#divineGlow)" />
+
+  <!-- Small connection wires/dots from the book to the flame -->
+  <line x1="50" y1="72" x2="50" y2="67" stroke="url(#goldGrad)" stroke-width="1" stroke-dasharray="1 1" />
 </svg>
