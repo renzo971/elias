@@ -243,10 +243,11 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
       }
     }
 
-    // Trim all fields
+    // Strip footnote-style number citations (like **3** or [3]) and trim all fields
+    const footnoteRegex = /\s?\*\*?\d+\*\*?|\s?\[\d+\]/g;
     for (const key in data) {
       // @ts-ignore
-      data[key] = data[key].trim();
+      data[key] = data[key].replace(footnoteRegex, '').trim();
     }
 
     return data;
