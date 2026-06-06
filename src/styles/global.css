@@ -131,3 +131,107 @@ html, body {
 .text-glow {
   text-shadow: 0 0 15px rgba(223, 177, 91, 0.25);
 }
+
+/* Print Styles for Sunday School Resources */
+@media print {
+  html, body {
+    background: white !important;
+    color: black !important;
+    position: relative !important;
+    height: auto !important;
+    width: auto !important;
+    overflow: visible !important;
+  }
+  
+  /* Hide all elements that shouldn't be printed */
+  header, footer, aside, .no-print, button, form, .fixed, .absolute, .divine-glow, .bg-\[url\(\'\/grid\.svg\'\)\] {
+    display: none !important;
+    height: 0 !important;
+    width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+  
+  /* The container of our printable resource */
+  .print-area {
+    display: block !important;
+    position: static !important;
+    background: white !important;
+    color: black !important;
+    padding: 2cm !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+  }
+
+  .print-area * {
+    color: black !important;
+    background: transparent !important;
+  }
+  
+  /* Style typography for high quality print */
+  .print-area h1 {
+    font-family: 'Cinzel', Georgia, serif !important;
+    font-size: 24pt !important;
+    font-weight: 700 !important;
+    text-align: center !important;
+    margin-bottom: 20pt !important;
+    border-bottom: 2px solid #292524 !important;
+    padding-bottom: 10px !important;
+  }
+  
+  .print-area h2 {
+    font-family: 'Cinzel', Georgia, serif !important;
+    font-size: 16pt !important;
+    font-weight: 600 !important;
+    margin-top: 24pt !important;
+    margin-bottom: 12pt !important;
+    border-bottom: 1px solid #e7e5e4 !important;
+    padding-bottom: 5px !important;
+    page-break-after: avoid;
+  }
+
+  .print-area h3 {
+    font-family: 'Plus Jakarta Sans', sans-serif !important;
+    font-size: 13pt !important;
+    font-weight: 700 !important;
+    margin-top: 18pt !important;
+    margin-bottom: 8pt !important;
+    page-break-after: avoid;
+  }
+  
+  .print-area p, .print-area li, .print-area div {
+    font-family: 'Lora', Georgia, serif !important;
+    font-size: 11pt !important;
+    line-height: 1.6 !important;
+    color: #1c1917 !important;
+    margin-bottom: 10pt !important;
+  }
+
+  .print-area blockquote {
+    border-left: 3px solid #78350f !important;
+    margin: 15pt 0 !important;
+    padding-left: 12pt !important;
+    font-style: italic !important;
+    color: #44403c !important;
+  }
+
+  .print-area ul, .print-area ol {
+    margin-left: 20pt !important;
+    margin-bottom: 12pt !important;
+  }
+
+  .print-area li {
+    margin-bottom: 4pt !important;
+  }
+
+  /* Prevent awkward page breaks */
+  p, li, blockquote {
+    orphans: 3;
+    widows: 3;
+  }
+}
+
