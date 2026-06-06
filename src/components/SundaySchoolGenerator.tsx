@@ -370,21 +370,30 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
 
     try {
       const element = folletoRef.current;
+      
+      // Force exact A4 page width (794px at 96 DPI matches 8.27in width of A4 page)
+      // This guarantees html2canvas renders it at full A4 scale even if stylesheets are removed
+      const originalWidth = element.style.width;
+      element.style.width = '794px';
+
       const opt = {
-        margin: 0.2,
+        margin: 0, // Using 0 margin so our internal page padding handles margins
         filename: `Clase_Dominical_${topic.replace(/\s+/g, '_')}.pdf`,
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: { 
-          scale: 1.8, 
+          scale: 2.0, // High quality render scale
           useCORS: true, 
           allowTaint: true,
           logging: false
         },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-        pagebreak: { mode: ['avoid-all', 'css'] }
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: 'css' }
       };
 
       await html2pdfFn().from(element).set(opt).save();
+      
+      // Restore width
+      element.style.width = originalWidth;
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Error desconocido';
       console.error("Error al exportar PDF:", message);
@@ -949,7 +958,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
         gap: '24px',
         borderTop: '4px solid #1c1917',
         paddingTop: '24px',
-        marginTop: '24px'
+        marginTop: '24px',
+        pageBreakBefore: 'always',
+        breakBefore: 'page'
       }}>
         {/* Header */}
         <div style={{
@@ -994,7 +1005,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
             borderRadius: '24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px'
+            gap: '16px',
+            pageBreakInside: 'avoid',
+            breakInside: 'avoid'
           }}>
             <span style={{ fontSize: '10px', fontWeight: 900, color: '#6b21a8', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
               🎲 Juego: {(() => {
@@ -1022,7 +1035,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
             borderRadius: '24px',
             display: 'flex',
             flexDirection: 'column',
-            gap: '16px'
+            gap: '16px',
+            pageBreakInside: 'avoid',
+            breakInside: 'avoid'
           }}>
             {/* Instructions */}
             <div>
@@ -1287,6 +1302,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                 ref={folletoRef}
                 id="printable-folleto-canvas"
                 style={{ 
+                  width: '100%',
+                  maxWidth: '794px', // Matches A4 width at 96 DPI
+                  boxSizing: 'border-box',
                   minHeight: '11in', 
                   fontFamily: '"Plus Jakarta Sans", sans-serif',
                   backgroundColor: '#ffffff', 
@@ -1425,7 +1443,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                           padding: '20px', 
                           borderRadius: '24px', 
                           position: 'relative',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                          pageBreakInside: 'avoid',
+                          breakInside: 'avoid'
                         }}
                       >
                         {/* Gold Star Overlay */}
@@ -1468,7 +1488,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       </div>
 
                       {/* Batallas / Dinámicas Banner */}
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                         <div 
                           style={{ 
                             display: 'inline-block', 
@@ -1494,7 +1514,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       </div>
 
                       {/* Attendance box style bottom P1 */}
-                      <div style={{ backgroundColor: '#fafaf9', border: '1px solid #e7e5e4', padding: '16px', borderRadius: '16px' }}>
+                      <div style={{ backgroundColor: '#fafaf9', border: '1px solid #e7e5e4', padding: '16px', borderRadius: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                         <span style={{ fontSize: '9px', fontWeight: 900, color: '#78716c', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
                           !ASISTENCIA!
                         </span>
@@ -1509,7 +1529,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                 {/* ========================================================
                     PAGINA 2: ACTIVIDADES / MANUALIDAD
                     ======================================================== */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '16px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '16px', pageBreakBefore: 'always', breakBefore: 'page' }}>
                   
                   {/* TENGO TALENTO HEADER */}
                   <div 
@@ -1550,7 +1570,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
                     {/* Materiales y Pasos */}
-                    <div style={{ border: '1px solid #e9d5ff', backgroundColor: 'rgba(250, 245, 255, 0.2)', padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ border: '1px solid #e9d5ff', backgroundColor: 'rgba(250, 245, 255, 0.2)', padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                       <div>
                         <span style={{ fontSize: '10px', fontWeight: 900, color: '#6b21a8', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Materiales Necesarios</span>
                         <div style={{ fontSize: '11px', fontFamily: '"Lora", Georgia, serif', color: '#1c1917', lineHeight: 1.5, paddingLeft: '16px', borderLeft: '1px solid #e9d5ff' }}>
@@ -1569,7 +1589,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                     </div>
 
                     {/* Dibujo e Ilustración */}
-                    <div style={{ border: '1px solid #e7e5e4', padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '260px' }}>
+                    <div style={{ border: '1px solid #e7e5e4', padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '260px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                       <div>
                         <span style={{ fontSize: '10px', fontWeight: 900, color: '#44403c', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
                           Dibujo Ilustrativo de la Clase
@@ -1610,7 +1630,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       borderRadius: '24px', 
                       position: 'relative',
                       marginTop: '16px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                      pageBreakInside: 'avoid',
+                      breakInside: 'avoid'
                     }}
                   >
                     <span 

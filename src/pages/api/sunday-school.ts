@@ -21,7 +21,7 @@ INSTRUCCIONES DE FORMATO:
 [PASAGE] (ej: Lucas 3:2-9, 18)
 [VERSICULO_REF] (ej: Apocalipsis 22:13)
 [VERSICULO_TEXTO] (ej: "Yo soy el Alfa y la Omega...")
-[LECCION] (La narración de la lección adaptada a la edad, escrita en un formato fluido. Si es para niños, usa lenguaje claro e ilustraciones atractivas. Escribe la historia completa).
+[LECCION] (La narración detallada y extendida de la lección, escrita en un formato fluido con suficiente profundidad pedagógica y teológica [mínimo 450-600 palabras] para servir como una guía de estudio de alta calidad para el maestro. Divide la historia completa en puntos clave con subtítulos lógicos y aplicaciones bíblicas prácticas adaptadas a la edad).
 [MATERIALES] (Lista de materiales para la sección "Tengo Talento" o manualidad, uno por línea con un punto o guión).
 [INSTRUCCIONES] (Instrucciones paso a paso para hacer la manualidad de la sección "Tengo Talento", una por línea).
 [JUEGO_TITULO] (Título del juego o actividad de la sección "Luces, Cámara y Acción" o "Batallas").
