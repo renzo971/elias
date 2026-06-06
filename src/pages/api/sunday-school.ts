@@ -29,10 +29,20 @@ INSTRUCCIONES DE FORMATO:
 [DESAFIO_TITULO] (Título de la sección de desafío o preguntas, ej: ¡Atrévete!).
 [DESAFIO_TEXTO] (Preguntas de repaso, aplicación diaria o lecturas devocionales para la semana).
 [ASISTENCIA] (Detalles o ideas de incentivos de asistencia para motivar a los niños).
+[ALUMNO_TIPO_JUEGO] (Tipo de juego para el alumno: SOPA DE LETRAS, LABERINTO, CAMINO, CODIGO_SECRETO, CRUCIGRAMA, o DIBUJO_DIRIGIDO. Debe ser DINÁMICO, no siempre dibujo. Elige según el tema de la lección.)
+[ALUMNO_CONTENIDO] (El contenido del juego. Para SOPA DE LETRAS: palabras separadas por comas, luego una cuadrícula de letras. Para LABERINTO: coordenadas o descripción. Para CAMINO: números o pasos. Para CRUCIGRAMA: pistas y respuestas.)
+[ALUMNO_INSTRUCCIONES] (Instrucciones claras para el alumno sobre cómo completar el ejercicio.)
+[ALUMNO_IMAGEN_PROMPT] (Prompt descriptivo en INGLÉS para generar una imagen infantil alusiva al tema, estilo cartoon, colores vivos, personajes bíblicos, apto para niños. Ejemplo: "Daniel in the lion's den surrounded by angels, cartoon style, vibrant colors, children's illustration, clean lines")
 
 ADAPTACIÓN POR EDAD:
 Adapta el contenido de la lección, el vocabulario y las manualidades según el grupo de edad solicitado. Cunas (0-3) debe ser súper visual y simple; Primarios (7-9) dinámico e interactivo; Jóvenes/Adultos exegético y profundo.
 `;
+
+interface NvidiaImageResponse {
+  data?: Array<{ b64_json?: string }>;
+  artifacts?: Array<{ base64?: string }>;
+  image_base64?: string;
+}
 
 export const POST: APIRoute = async ({ request }) => {
   const nvidiaKey =
@@ -41,7 +51,10 @@ export const POST: APIRoute = async ({ request }) => {
     process.env.NVIDIA_API_KEY ||
     process.env.PUBLIC_NVIDIA_API_KEY;
 
+  console.log("[SundaySchool] API key found:", !!nvidiaKey);
+
   if (!nvidiaKey) {
+    console.error("[SundaySchool] No NVIDIA_API_KEY configured");
     return new Response(
       JSON.stringify({ error: "NVIDIA_API_KEY no configurada" }),
       { status: 500 },
@@ -70,13 +83,16 @@ export const POST: APIRoute = async ({ request }) => {
 - **Tipo de Recurso:** ${resourceType}
 ${customDetails ? `- **Detalles o Enfoque Personalizado del Maestro:** ${customDetails}` : ""}
 
-Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundamental. Recuerda usar todas las etiquetas delimitadoras: [NUMERO_ESCENA], [TITULO], [PASAGE], [VERSICULO_REF], [VERSICULO_TEXTO], [LECCION], [MATERIALES], [INSTRUCCIONES], [JUEGO_TITULO], [JUEGO_TEXTO], [DESAFIO_TITULO], [DESAFIO_TEXTO], [ASISTENCIA].`;
+Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundamental. Recuerda usar todas las etiquetas delimitadoras: [NUMERO_ESCENA], [TITULO], [PASAGE], [VERSICULO_REF], [VERSICULO_TEXTO], [LECCION], [MATERIALES], [INSTRUCCIONES], [JUEGO_TITULO], [JUEGO_TEXTO], [DESAFIO_TITULO], [DESAFIO_TEXTO], [ASISTENCIA], [ALUMNO_TIPO_JUEGO], [ALUMNO_CONTENIDO], [ALUMNO_INSTRUCCIONES], [ALUMNO_IMAGEN_PROMPT].`;
 
     const encoder = new TextEncoder();
     const responseStream = new ReadableStream({
       async start(controller) {
-        try {
-          const completion = await client.chat.completions.create({
+        let fullContent = "";
+
+          try {
+            console.log("[SundaySchool] Starting LLM generation...");
+            const completion = await client.chat.completions.create({
             model: "meta/llama-3.1-8b-instruct",
             messages: [
               { role: "system", content: SYSTEM_PROMPT },
@@ -90,6 +106,7 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
           for await (const chunk of completion) {
             const chunkText = chunk.choices[0]?.delta?.content || "";
             if (chunkText) {
+              fullContent += chunkText;
               controller.enqueue(
                 encoder.encode(
                   `data: ${JSON.stringify({ content: chunkText })}\n\n`,
@@ -98,20 +115,78 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
             }
           }
 
+          console.log("[SundaySchool] LLM stream complete. Total chars:", fullContent.length);
+
+          // Extract image prompt from full content
+          const imagePromptMatch = fullContent.match(/\[ALUMNO_IMAGEN_PROMPT\]\s*([\s\S]*?)(?=\[|$)/);
+          const extractedPrompt = imagePromptMatch ? imagePromptMatch[1].trim() : null;
+
+          if (extractedPrompt) {
+            console.log("[SundaySchool] Image prompt extracted, length:", extractedPrompt.length, "preview:", extractedPrompt.substring(0, 100));
+
+            // Generate image via qwen-image with 30s timeout
+            try {
+              const abortController = new AbortController();
+              const timeout = setTimeout(() => abortController.abort(), 30000);
+
+              const imageResponse = await fetch("https://ai.api.nvidia.com/v1/genai/qwen/qwen-image", {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${nvidiaKey}`,
+                },
+                body: JSON.stringify({
+                  prompt: extractedPrompt,
+                  samples: 1,
+                }),
+                signal: abortController.signal,
+              });
+
+              clearTimeout(timeout);
+
+              if (imageResponse.ok) {
+                const result: NvidiaImageResponse = await imageResponse.json();
+                // Try different response formats (NVIDIA NIM models vary)
+                const base64 = result?.artifacts?.[0]?.base64 || result?.data?.[0]?.b64_json || result?.image_base64;
+                if (base64) {
+                  console.log("[SundaySchool] Image generated successfully");
+                  controller.enqueue(
+                    encoder.encode(
+                      `data: ${JSON.stringify({ alumno_imagen_base64: `data:image/png;base64,${base64}` })}\n\n`,
+                    ),
+                  );
+                } else {
+                  console.warn("[SundaySchool] Image response had no base64 data. Response keys:", Object.keys(result));
+                }
+              } else {
+                const errorText = await imageResponse.text();
+                console.warn("[SundaySchool] Image API error:", imageResponse.status, errorText.substring(0, 200));
+              }
+            } catch (imageError) {
+              console.error("[SundaySchool] Image generation error (non-fatal):", imageError);
+            }
+          } else {
+            console.log("[SundaySchool] No [ALUMNO_IMAGEN_PROMPT] found in content");
+          }
+
+          console.log("[SundaySchool] Sending is_final event");
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({ is_final: true })}\n\n`,
             ),
           );
           controller.close();
-        } catch (error: any) {
-          console.error("Stream error in Sunday School:", error);
+          console.log("[SundaySchool] Stream closed");
+        } catch (error: unknown) {
+          const message = error instanceof Error ? error.message : 'Error desconocido';
+          console.error("[SundaySchool] Stream error:", message);
           controller.enqueue(
             encoder.encode(
-              `data: ${JSON.stringify({ error: error.message })}\n\n`,
+              `data: ${JSON.stringify({ error: message })}\n\n`,
             ),
           );
           controller.close();
+          console.log("[SundaySchool] Stream closed after error");
         }
       },
     });
@@ -123,8 +198,10 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
         Connection: "keep-alive",
       },
     });
-  } catch (error: any) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Error desconocido';
+    console.error("[SundaySchool] Request error:", message);
+    return new Response(JSON.stringify({ error: message }), {
       status: 400,
     });
   }

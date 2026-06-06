@@ -1,8 +1,19 @@
 import React, { useState, useRef } from 'react';
-import EliasLogo from './EliasLogo';
+
+declare global {
+  interface Window {
+    html2pdf?: (options?: any) => {
+      from: (element: HTMLElement) => {
+        set: (opts: any) => {
+          save: () => Promise<void>;
+        };
+      };
+    };
+  }
+}
 
 interface SundaySchoolGeneratorProps {
-  formatContent: (content: string) => React.ReactNode;
+  formatContent?: (content: string) => React.ReactNode;
 }
 
 interface LessonData {
@@ -19,9 +30,174 @@ interface LessonData {
   desafioTitulo: string;
   desafioTexto: string;
   asistencia: string;
+  alumnoTipoJuego: string;
+  alumnoContenido: string;
+  alumnoInstrucciones: string;
+  alumnoImagenBase64: string;
+  alumnoImagenPrompt: string;
 }
 
-export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGeneratorProps) {
+const gridCache = new Map<string, string[][]>();
+
+const generateWordSearchGrid = (words: string[]): string[][] => {
+  const size = 10; // 10x10 is perfect for Letter size layout
+  const grid: string[][] = Array(size).fill(null).map(() => Array(size).fill(''));
+  
+  const directions = [
+    [0, 1],   // Horizontal right
+    [1, 0],   // Vertical down
+    [1, 1],   // Diagonal down-right
+  ];
+
+  const cleanWord = (w: string) => {
+    return w
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove accents
+      .replace(/[^A-Z]/gi, "")         // Remove non-alphabetic
+      .toUpperCase();
+  };
+
+  const processedWords = words.map(w => cleanWord(w)).filter(w => w.length > 1 && w.length <= size);
+
+  for (const word of processedWords) {
+    let placed = false;
+    let attempts = 0;
+    
+    while (!placed && attempts < 100) {
+      attempts++;
+      const dir = directions[Math.floor(Math.random() * directions.length)];
+      const row = Math.floor(Math.random() * size);
+      const col = Math.floor(Math.random() * size);
+      
+      let fits = true;
+      for (let i = 0; i < word.length; i++) {
+        const newRow = row + dir[0] * i;
+        const newCol = col + dir[1] * i;
+        
+        if (newRow >= size || newCol >= size || (grid[newRow][newCol] !== '' && grid[newRow][newCol] !== word[i])) {
+          fits = false;
+          break;
+        }
+      }
+      
+      if (fits) {
+        for (let i = 0; i < word.length; i++) {
+          grid[row + dir[0] * i][col + dir[1] * i] = word[i];
+        }
+        placed = true;
+      }
+    }
+  }
+
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      if (grid[r][c] === '') {
+        grid[r][c] = alphabet[Math.floor(Math.random() * alphabet.length)];
+      }
+    }
+  }
+
+  return grid;
+};
+
+const getOrGenerateGrid = (content: string, words: string[]): string[][] => {
+  if (gridCache.has(content)) {
+    return gridCache.get(content)!;
+  }
+  const grid = generateWordSearchGrid(words);
+  gridCache.set(content, grid);
+  return grid;
+};
+
+interface MazeCell {
+  r: number;
+  c: number;
+  visited: boolean;
+  walls: { top: boolean; right: boolean; bottom: boolean; left: boolean };
+}
+
+const mazeCache = new Map<string, MazeCell[][]>();
+
+const generateMaze = (rows: number, cols: number): MazeCell[][] => {
+  const grid: MazeCell[][] = [];
+  for (let r = 0; r < rows; r++) {
+    const rowCells: MazeCell[] = [];
+    for (let c = 0; c < cols; c++) {
+      rowCells.push({
+        r,
+        c,
+        visited: false,
+        walls: { top: true, right: true, bottom: true, left: true }
+      });
+    }
+    grid.push(rowCells);
+  }
+
+  const stack: MazeCell[] = [];
+  const start = grid[0][0];
+  start.visited = true;
+  stack.push(start);
+
+  while (stack.length > 0) {
+    const current = stack[stack.length - 1];
+    const neighbors: MazeCell[] = [];
+
+    const directions = [
+      { r: -1, c: 0, opposite: 'bottom', wall: 'top' },
+      { r: 0, c: 1, opposite: 'left', wall: 'right' },
+      { r: 1, c: 0, opposite: 'top', wall: 'bottom' },
+      { r: 0, c: -1, opposite: 'right', wall: 'left' }
+    ];
+
+    for (const d of directions) {
+      const nr = current.r + d.r;
+      const nc = current.c + d.c;
+      if (nr >= 0 && nr < rows && nc >= 0 && nc < cols) {
+        const neighbor = grid[nr][nc];
+        if (!neighbor.visited) {
+          neighbors.push(neighbor);
+        }
+      }
+    }
+
+    if (neighbors.length > 0) {
+      const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+      if (next.r < current.r) {
+        current.walls.top = false;
+        next.walls.bottom = false;
+      } else if (next.r > current.r) {
+        current.walls.bottom = false;
+        next.walls.top = false;
+      } else if (next.c < current.c) {
+        current.walls.left = false;
+        next.walls.right = false;
+      } else if (next.c > current.c) {
+        current.walls.right = false;
+        next.walls.left = false;
+      }
+      next.visited = true;
+      stack.push(next);
+    } else {
+      stack.pop();
+    }
+  }
+
+  grid[0][0].walls.left = false;
+  grid[rows - 1][cols - 1].walls.right = false;
+  return grid;
+};
+
+const getOrGenerateMaze = (content: string): MazeCell[][] => {
+  if (mazeCache.has(content)) {
+    return mazeCache.get(content)!;
+  }
+  const maze = generateMaze(8, 8);
+  mazeCache.set(content, maze);
+  return maze;
+};
+
+export default function SundaySchoolGenerator({ formatContent: _formatContent }: SundaySchoolGeneratorProps) {
   const [ageGroup, setAgeGroup] = useState('Primarios (7-9 años)');
   const [resourceType, setResourceType] = useState('Lección Completa / Guía del Maestro');
   const [topic, setTopic] = useState('');
@@ -32,10 +208,12 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
   const [isDownloading, setIsDownloading] = useState(false);
   const [generationStatus, setGenerationStatus] = useState<'idle' | 'generating' | 'finalized'>('idle');
   const [streamProgress, setStreamProgress] = useState(0);
+  const [alumnoImagenBase64, setAlumnoImagenBase64] = useState('');
+  const [imageStage, setImageStage] = useState(0);
 
   const folletoRef = useRef<HTMLDivElement>(null);
 
-  const handleGenerate = async (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!topic.trim() || isGenerating) return;
 
@@ -43,6 +221,8 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
     setGeneratedResource('');
     setGenerationStatus('generating');
     setStreamProgress(0);
+    setAlumnoImagenBase64('');
+    setImageStage(0);
 
     try {
       const response = await fetch('/api/sunday-school', {
@@ -72,10 +252,16 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
       let totalChunks = 0;
       const estimatedTotalChunks = 120; // Estimación para una respuesta completa
       let isFinalReceived = false;
+      let firstChunkLogged = false;
+
+      console.log("[SundaySchool Frontend] Starting stream read...");
 
       while (true) {
         const { done, value } = await reader.read();
-        if (done) break;
+        if (done) {
+          console.log("[SundaySchool Frontend] Stream reader done (no more data)");
+          break;
+        }
 
         totalChunks++;
         // Actualizar progreso basado en chunks recibidos (simulado hasta un 95%)
@@ -91,25 +277,40 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
               const data = JSON.parse(line.slice(6));
               if (data.error) throw new Error(data.error);
               if (data.is_final) {
+                console.log("[SundaySchool Frontend] is_final event received");
                 isFinalReceived = true;
                 setGenerationStatus('finalized');
                 setStreamProgress(100);
                 break;
               }
               if (data.content) {
+                if (!firstChunkLogged) {
+                  console.log("[SundaySchool Frontend] First chunk received!");
+                  firstChunkLogged = true;
+                }
+                if (totalChunks <= 3 || totalChunks % 50 === 0) {
+                  console.log(`[SundaySchool Frontend] Chunk #${totalChunks}, content length: ${data.content.length}, preview: "${data.content.substring(0, 100)}"`);
+                }
                 setGeneratedResource((prev) => prev + data.content);
               }
+              if (data.alumno_imagen_base64) {
+                console.log("[SundaySchool Frontend] Image received (alumno_imagen_base64), length:", data.alumno_imagen_base64.length);
+                setAlumnoImagenBase64(data.alumno_imagen_base64);
+              }
             } catch (e) {
-              console.error('Error parsing stream chunk:', e);
+              console.error('[SundaySchool Frontend] Error parsing stream chunk:', e);
             }
           }
         }
 
         if (isFinalReceived) break;
       }
-    } catch (error: any) {
-      console.error('Error generating Sunday School resource:', error);
-      setGeneratedResource('Error al generar recurso: ' + error.message);
+
+      console.log("[SundaySchool Frontend] Stream loop terminated. Total chunks:", totalChunks, "isFinalReceived:", isFinalReceived);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error desconocido';
+      console.error('Error generating Sunday School resource:', message);
+      setGeneratedResource('Error al generar recurso: ' + message);
     } finally {
       setIsGenerating(false);
       setGenerationStatus('finalized');
@@ -119,9 +320,7 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
   const downloadPDF = () => {
     setIsDownloading(true);
     
-    // @ts-ignore
     if (window.html2pdf) {
-      // @ts-ignore
       executeHtml2Pdf(window.html2pdf);
       return;
     }
@@ -130,8 +329,9 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
     script.crossOrigin = 'anonymous';
     script.onload = () => {
-      // @ts-ignore
-      executeHtml2Pdf(window.html2pdf);
+      if (window.html2pdf) {
+        executeHtml2Pdf(window.html2pdf);
+      }
     };
     script.onerror = (err) => {
       console.error("Error cargando html2pdf.js:", err);
@@ -141,7 +341,7 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
     document.head.appendChild(script);
   };
 
-  const executeHtml2Pdf = async (html2pdfFn: any) => {
+  const executeHtml2Pdf = async (html2pdfFn: NonNullable<Window['html2pdf']>) => {
     if (!folletoRef.current) {
       setIsDownloading(false);
       return;
@@ -171,7 +371,7 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
     try {
       const element = folletoRef.current;
       const opt = {
-        margin: 0.3,
+        margin: 0.2,
         filename: `Clase_Dominical_${topic.replace(/\s+/g, '_')}.pdf`,
         image: { type: 'jpeg', quality: 0.95 },
         html2canvas: { 
@@ -185,9 +385,10 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
       };
 
       await html2pdfFn().from(element).set(opt).save();
-    } catch (error: any) {
-      console.error("Error al exportar PDF:", error);
-      alert("Hubo un problema al generar el archivo PDF: " + (error?.message || error));
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Error desconocido';
+      console.error("Error al exportar PDF:", message);
+      alert("Hubo un problema al generar el archivo PDF: " + message);
     } finally {
       // Restore all stylesheets to restore page styling
       stylesBackup.forEach((backup) => {
@@ -216,12 +417,17 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
       juegoTexto: '',
       desafioTitulo: '¡Atrévete!',
       desafioTexto: '',
-      asistencia: 'Trae tu Biblia, memoriza el versículo y colecciona los stickers semanales.'
+      asistencia: 'Trae tu Biblia, memoriza el versículo y colecciona los stickers semanales.',
+      alumnoTipoJuego: 'DIBUJO_DIRIGIDO',
+      alumnoContenido: '',
+      alumnoInstrucciones: '',
+      alumnoImagenBase64: '',
+      alumnoImagenPrompt: ''
     };
 
     if (!text) return data;
 
-    const sections = [
+    const sections: { tag: string; field: keyof LessonData }[] = [
       { tag: '[NUMERO_ESCENA]', field: 'numeroEscena' },
       { tag: '[TITULO]', field: 'titulo' },
       { tag: '[PASAGE]', field: 'pasaje' },
@@ -234,10 +440,14 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
       { tag: '[JUEGO_TEXTO]', field: 'juegoTexto' },
       { tag: '[DESAFIO_TITULO]', field: 'desafioTitulo' },
       { tag: '[DESAFIO_TEXTO]', field: 'desafioTexto' },
-      { tag: '[ASISTENCIA]', field: 'asistencia' }
+      { tag: '[ASISTENCIA]', field: 'asistencia' },
+      { tag: '[ALUMNO_TIPO_JUEGO]', field: 'alumnoTipoJuego' },
+      { tag: '[ALUMNO_CONTENIDO]', field: 'alumnoContenido' },
+      { tag: '[ALUMNO_INSTRUCCIONES]', field: 'alumnoInstrucciones' },
+      { tag: '[ALUMNO_IMAGEN_PROMPT]', field: 'alumnoImagenPrompt' }
     ];
 
-    let currentField: string | null = null;
+    let currentField: keyof LessonData | null = null;
     const lines = text.split('\n');
 
     for (const line of lines) {
@@ -249,10 +459,8 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
           // Extract any inline content after the tag
           const rest = line.substring(line.indexOf(section.tag) + section.tag.length).trim();
           if (rest) {
-            // @ts-ignore
             data[currentField] = rest + '\n';
           } else {
-            // @ts-ignore
             data[currentField] = '';
           }
           break;
@@ -260,16 +468,14 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
       }
 
       if (!matched && currentField) {
-        // @ts-ignore
         data[currentField] += line + '\n';
       }
     }
 
     // Strip footnote-style number citations (like **3** or [3]) and trim all fields
     const footnoteRegex = /\s?\*\*?\d+\*\*?|\s?\[\d+\]/g;
-    for (const key in data) {
-      // @ts-ignore
-      data[key] = data[key].replace(footnoteRegex, '').trim();
+    for (const key of Object.keys(data) as (keyof LessonData)[]) {
+      data[key] = (data[key] as string).replace(footnoteRegex, '').trim() as any;
     }
 
     return data;
@@ -387,6 +593,560 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
         </p>
       );
     });
+  };
+
+  // ============================================================
+  // Helper: Render Sopa de Letras (Word Search Grid)
+  // ============================================================
+  const renderSopaLetras = (content: string): React.ReactNode => {
+    const lines = content.trim().split('\n').filter(l => l.trim());
+    if (lines.length < 1) {
+      return <p style={{ fontSize: '11px', fontFamily: '"Lora", Georgia, serif', color: '#78716c', fontStyle: 'italic' }}>Contenido de sopa de letras no disponible.</p>;
+    }
+
+    // First line: word list
+    const wordsLine = lines[0];
+    const words = wordsLine.replace(/^PALABRAS:\s*/i, '').split(',').map(w => w.trim().toUpperCase()).filter(w => w);
+
+    if (words.length === 0) {
+      return <p style={{ fontSize: '11px', fontFamily: '"Lora", Georgia, serif', color: '#78716c', fontStyle: 'italic' }}>Lista de palabras vacía.</p>;
+    }
+
+    // Dynamically generate or fetch the cached word search grid
+    const grid = getOrGenerateGrid(content, words);
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {/* Word list */}
+        {words.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
+            <span style={{ fontSize: '9px', fontWeight: 900, color: '#1e3a8a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Palabras a encontrar:
+            </span>
+            {words.map((word, i) => (
+              <span
+                key={i}
+                style={{
+                  fontSize: '9px',
+                  fontFamily: '"Plus Jakarta Sans", sans-serif',
+                  fontWeight: 700,
+                  color: '#1c1917',
+                  backgroundColor: '#e0e7ff',
+                  padding: '2px 8px',
+                  borderRadius: '9999px',
+                  border: '1px solid #a5b4fc'
+                }}
+              >
+                {word}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Grid */}
+        <div style={{ display: 'inline-block', alignSelf: 'center' }}>
+          <table style={{ borderCollapse: 'collapse', margin: '0 auto' }}>
+            <tbody>
+              {grid.map((row, ri) => (
+                <tr key={ri}>
+                  {row.map((cell, ci) => (
+                    <td
+                      key={ci}
+                      style={{
+                        width: '28px',
+                        height: '28px',
+                        textAlign: 'center',
+                        verticalAlign: 'middle',
+                        border: '1px solid #d4d4d4',
+                        fontFamily: '"Courier New", Courier, monospace',
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: '#1c1917',
+                        backgroundColor: (ri + ci) % 2 === 0 ? '#fafaf9' : '#f5f5f4',
+                        padding: 0
+                      }}
+                    >
+                      {cell.toUpperCase()}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
+  const renderLaberinto = (content: string): React.ReactNode => {
+    const maze = getOrGenerateMaze(content);
+    const cellSize = 26; // 26px per cell fits column width
+    const width = 8 * cellSize;
+    const height = 8 * cellSize;
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center' }}>
+        {content && (
+          <div style={{
+            fontSize: '11px',
+            fontFamily: '"Lora", Georgia, serif',
+            color: '#1c1917',
+            lineHeight: 1.6,
+            padding: '16px',
+            backgroundColor: '#fafaf9',
+            borderRadius: '12px',
+            border: '1px solid #e7e5e4',
+            width: '100%',
+            boxSizing: 'border-box'
+          }}>
+            {formatPdfContent(content)}
+          </div>
+        )}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '#f5f3ff',
+          borderRadius: '16px',
+          border: '2px dashed #a78bfa',
+          padding: '16px',
+          width: '100%',
+          boxSizing: 'border-box'
+        }}>
+          <span style={{ fontSize: '9px', fontWeight: 900, color: '#7c3aed', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            ENTRADA ➔
+          </span>
+          <svg width={width + 4} height={height + 4} style={{ backgroundColor: '#ffffff', border: '2px solid #7c3aed', borderRadius: '8px' }}>
+            <g transform="translate(2, 2)">
+              {maze.map((row, r) =>
+                row.map((cell, c) => {
+                  const x1 = c * cellSize;
+                  const y1 = r * cellSize;
+                  const x2 = (c + 1) * cellSize;
+                  const y2 = (r + 1) * cellSize;
+                  return (
+                    <g key={`${r}-${c}`}>
+                      {cell.walls.top && <line x1={x1} y1={y1} x2={x2} y2={y1} stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" />}
+                      {cell.walls.right && <line x1={x2} y1={y1} x2={x2} y2={y2} stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" />}
+                      {cell.walls.bottom && <line x1={x1} y1={y2} x2={x2} y2={y2} stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" />}
+                      {cell.walls.left && <line x1={x1} y1={y1} x2={x1} y2={y2} stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" />}
+                    </g>
+                  );
+                })
+              )}
+            </g>
+          </svg>
+          <span style={{ fontSize: '9px', fontWeight: 900, color: '#7c3aed', marginTop: '6px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            ➔ SALIDA
+          </span>
+        </div>
+      </div>
+    );
+  };
+
+  // ============================================================
+  // Helper: Render dynamic game section based on tipo de juego
+  // ============================================================
+  const renderGameSection = (tipoJuego: string, contenido: string): React.ReactNode => {
+    const tipo = tipoJuego.toUpperCase().trim();
+
+    if (tipo.includes('SOPA') || tipo.includes('LETRA')) {
+      return renderSopaLetras(contenido);
+    }
+    if (tipo.includes('LABERINTO')) {
+      return renderLaberinto(contenido);
+    }
+
+    switch (tipo) {
+
+      case 'LABERINTO':
+        return renderLaberinto(contenido);
+
+      case 'CAMINO':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '8px',
+              padding: '16px',
+              backgroundColor: '#f0fdf4',
+              borderRadius: '16px',
+              border: '1px solid #bbf7d0'
+            }}>
+              {contenido.split('\n').filter(l => l.trim()).map((step, i) => (
+                <div key={i} style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '12px',
+                  padding: '8px 12px',
+                  backgroundColor: '#ffffff',
+                  borderRadius: '10px',
+                  border: '1px solid #dcfce7'
+                }}>
+                  <span style={{
+                    width: '24px',
+                    height: '24px',
+                    backgroundColor: '#22c55e',
+                    color: '#ffffff',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 900,
+                    fontSize: '11px',
+                    fontFamily: '"Plus Jakarta Sans", sans-serif',
+                    flexShrink: 0
+                  }}>
+                    {i + 1}
+                  </span>
+                  <span style={{ fontSize: '11px', fontFamily: '"Lora", Georgia, serif', color: '#1c1917', lineHeight: 1.5 }}>
+                    {formatPdfInline(step)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+
+      case 'CODIGO_SECRETO':
+      case 'CODIGO SECRETO':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{
+              border: '2px dashed #f59e0b',
+              borderRadius: '16px',
+              backgroundColor: '#fffbeb',
+              padding: '20px',
+              minHeight: '150px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px'
+            }}>
+              <div style={{ fontSize: '11px', fontFamily: '"Lora", Georgia, serif', color: '#1c1917', lineHeight: 1.6 }}>
+                {formatPdfContent(contenido)}
+              </div>
+              <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                justifyContent: 'center',
+                marginTop: '8px',
+                padding: '12px',
+                backgroundColor: '#ffffff',
+                borderRadius: '12px',
+                border: '1px solid #fde68a'
+              }}>
+                {Array.from({ length: 10 }, (_, i) => (
+                  <div key={i} style={{
+                    width: '36px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#fef3c7',
+                    borderRadius: '8px',
+                    border: '1px solid #fde68a',
+                    fontFamily: '"Courier New", monospace',
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    color: '#92400e'
+                  }}>
+                    {String.fromCharCode(65 + i)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'CRUCIGRAMA':
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '12px',
+              padding: '16px',
+              backgroundColor: '#f8fafc',
+              borderRadius: '16px',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div>
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#1e3a8a', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  Horizontales
+                </span>
+                <div style={{ fontSize: '10px', fontFamily: '"Lora", Georgia, serif', color: '#1c1917', lineHeight: 1.8 }}>
+                  {formatPdfContent(contenido)}
+                </div>
+              </div>
+              <div>
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#1e3a8a', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                  Verticales
+                </span>
+                <div style={{
+                  border: '1px dashed #cbd5e1',
+                  borderRadius: '12px',
+                  minHeight: '120px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '16px',
+                  fontSize: '9px',
+                  color: '#94a3b8',
+                  fontFamily: '"Lora", Georgia, serif',
+                  fontStyle: 'italic'
+                }}>
+                  Próximamente
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'DIBUJO_DIRIGIDO':
+      case 'DIBUJO DIRIGIDO':
+      default:
+        return (
+          <div style={{
+            border: '2px dashed #d6d3d1',
+            borderRadius: '16px',
+            backgroundColor: '#fafaf9',
+            minHeight: '200px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            textAlign: 'center',
+            padding: '24px'
+          }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '36px', opacity: 0.2 }}>🖍️</span>
+              {contenido ? (
+                <div style={{ fontSize: '10px', fontFamily: '"Lora", Georgia, serif', color: '#78716c', fontStyle: 'italic', maxWidth: '300px', lineHeight: 1.5 }}>
+                  {formatPdfContent(contenido)}
+                </div>
+              ) : (
+                <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a8a29e' }}>
+                  Dibuja o colorea aquí
+                </span>
+              )}
+            </div>
+          </div>
+        );
+    }
+  };
+
+  // ============================================================
+  // Helper: Render Alumno Material Section
+  // ============================================================
+  const renderAlumnoSection = (): React.ReactNode => {
+    return (
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '24px',
+        borderTop: '4px solid #1c1917',
+        paddingTop: '24px',
+        marginTop: '24px'
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '16px',
+          backgroundColor: '#faf5ff',
+          border: '4px solid #9333ea',
+          padding: '16px',
+          borderRadius: '24px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+        }}>
+          <div style={{
+            backgroundColor: '#9333ea',
+            color: '#ffffff',
+            fontWeight: 900,
+            fontSize: '11px',
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            padding: '10px 24px',
+            borderRadius: '16px',
+            border: '2px solid #ffffff',
+            transform: 'rotate(-1deg)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            📝 MATERIAL DE TRABAJO
+          </div>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ margin: 0, fontWeight: 900, color: '#6b21a8', fontSize: '16px' }}>Alumno</h4>
+            <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: '#78716c', fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic' }}>
+              Actividad grupal para reforzar la lección de hoy.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
+          {/* Left column: Game Activity */}
+          <div style={{
+            border: '1px solid #e9d5ff',
+            backgroundColor: 'rgba(250, 245, 255, 0.2)',
+            padding: '24px',
+            borderRadius: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            <span style={{ fontSize: '10px', fontWeight: 900, color: '#6b21a8', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+              🎲 Juego: {(() => {
+                const tipos: Record<string, string> = {
+                  'SOPA_DE_LETRAS': 'Sopa de Letras',
+                  'SOPA DE LETRAS': 'Sopa de Letras',
+                  'LABERINTO': 'Laberinto',
+                  'CAMINO': 'Camino de la Fe',
+                  'CODIGO_SECRETO': 'Código Secreto',
+                  'CODIGO SECRETO': 'Código Secreto',
+                  'CRUCIGRAMA': 'Crucigrama Bíblico',
+                  'DIBUJO_DIRIGIDO': 'Dibujo Dirigido',
+                  'DIBUJO DIRIGIDO': 'Dibujo Dirigido'
+                };
+                return tipos[lesson.alumnoTipoJuego.toUpperCase().trim()] || 'Actividad Didáctica';
+              })()}
+            </span>
+            {renderGameSection(lesson.alumnoTipoJuego, lesson.alumnoContenido)}
+          </div>
+
+          {/* Right column: Instructions + Image */}
+          <div style={{
+            border: '1px solid #e7e5e4',
+            padding: '24px',
+            borderRadius: '24px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '16px'
+          }}>
+            {/* Instructions */}
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: 900, color: '#44403c', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                📋 Instrucciones
+              </span>
+              {lesson.alumnoInstrucciones ? (
+                <div style={{
+                  fontSize: '11px',
+                  fontFamily: '"Lora", Georgia, serif',
+                  color: '#1c1917',
+                  lineHeight: 1.6,
+                  padding: '12px',
+                  backgroundColor: '#fafaf9',
+                  borderRadius: '12px',
+                  border: '1px solid #e7e5e4'
+                }}>
+                  {formatPdfContent(lesson.alumnoInstrucciones)}
+                </div>
+              ) : (
+                <p style={{ fontSize: '10px', fontFamily: '"Lora", Georgia, serif', color: '#78716c', fontStyle: 'italic' }}>
+                  Sigue las indicaciones de tu maestro para completar la actividad.
+                </p>
+              )}
+            </div>
+
+            {/* Generated Image */}
+            <div>
+              <span style={{ fontSize: '10px', fontWeight: 900, color: '#44403c', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                🖼️ Ilustración de la clase
+              </span>
+              <div style={{
+                border: '2px dashed #d6d3d1',
+                borderRadius: '16px',
+                backgroundColor: '#fafaf9',
+                minHeight: '160px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                overflow: 'hidden'
+              }}>
+                {alumnoImagenBase64 || lesson.alumnoImagenPrompt || lesson.titulo || topic ? (
+                  imageStage === 0 ? (
+                    <img
+                      src={alumnoImagenBase64 || `https://image.pollinations.ai/prompt/${encodeURIComponent(
+                        lesson.alumnoImagenPrompt && lesson.alumnoImagenPrompt.trim().length > 5 
+                          ? lesson.alumnoImagenPrompt 
+                          : `cartoon illustration of ${lesson.titulo || topic}, friendly bible story style for kids, vibrant colors, clean lines`
+                      )}?width=512&height=512&model=flux&nologo=true`}
+                      alt="Ilustración generada para la clase"
+                      onError={() => setImageStage(1)}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        maxHeight: '260px',
+                        objectFit: 'contain',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  ) : imageStage === 1 ? (
+                    <img
+                      src={`https://loremflickr.com/512/512/bible,${encodeURIComponent(lesson.titulo || topic || 'cartoon')}`}
+                      alt="Ilustración de la lección"
+                      onError={() => setImageStage(2)}
+                      style={{
+                        width: '100%',
+                        height: 'auto',
+                        maxHeight: '260px',
+                        objectFit: 'contain',
+                        borderRadius: '8px'
+                      }}
+                    />
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px', textAlign: 'center' }}>
+                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9333ea" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                        <path d="M6 6h10" />
+                        <path d="M6 10h10" />
+                        <path d="M6 14h10" />
+                      </svg>
+                      <span style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b21a8' }}>
+                        Estudio Bíblico
+                      </span>
+                      <span style={{ fontSize: '8px', fontFamily: '"Lora", Georgia, serif', color: '#78716c', fontStyle: 'italic' }}>
+                        Dibujo para colorear y recortar
+                      </span>
+                    </div>
+                  )
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px', textAlign: 'center' }}>
+                    <span style={{ fontSize: '28px', opacity: 0.2 }}>🖼️</span>
+                    <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a8a29e' }}>
+                      Imagen de la Lección
+                    </span>
+                    <span style={{ fontSize: '8px', fontFamily: '"Lora", Georgia, serif', color: '#d6d3d1', fontStyle: 'italic' }}>
+                      Ilustración generada por IA
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom info bar */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderTop: '1px solid #e7e5e4',
+          paddingTop: '12px',
+          fontSize: '8px',
+          color: '#78716c',
+          fontFamily: 'monospace'
+        }}>
+          <span>ELÍAS — Material del Alumno</span>
+          <span style={{ fontWeight: 'bold', textTransform: 'uppercase', color: '#57534e', fontSize: '8px', letterSpacing: '0.1em' }}>
+            Recorta y trabaja en grupo
+          </span>
+        </div>
+      </div>
+    );
   };
 
   const lesson = parseResource(generatedResource);
@@ -897,8 +1657,15 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
                   </div>
                 </div>
 
-              </div>
-            ) : (
+                {/* ========================================================
+                    MATERIAL DEL ALUMNO
+                    ======================================================== */}
+                {lesson.alumnoTipoJuego && lesson.alumnoContenido && (
+                  renderAlumnoSection()
+                )}
+                </div>
+
+              ) : (
               <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-4 opacity-40 bg-[#12100e]/30 rounded-3xl border border-stone-800/80">
                 <span className="text-5xl">📚</span>
                 <h3 className="text-lg font-heading text-[#dfb15b] font-bold">Plantilla de Folleto Dominical</h3>
