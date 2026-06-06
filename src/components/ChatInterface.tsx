@@ -8,6 +8,8 @@ import {
 } from '../services/chatService';
 import type { ChatSession } from '../services/chatService';
 import { confessionChapters } from '../data/confesion1689';
+import SundaySchoolGenerator from './SundaySchoolGenerator';
+
 
 // Componente del Logo Premium de ELÍAS
 const EliasLogo = ({ className = "w-5 h-5" }: { className?: string }) => (
@@ -106,6 +108,8 @@ export default function ChatInterface() {
   // Estados de nuevas funcionalidades
   const [activeTab, setActiveTab] = useState<'history' | 'confession'>('history');
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeView, setActiveView] = useState<'chat' | 'sunday-school'>('chat');
+
 
   // Lector Bíblico (Modal)
   const [activeVerseRef, setActiveVerseRef] = useState<string | null>(null);
@@ -679,7 +683,7 @@ export default function ChatInterface() {
       <div className="fixed inset-0 divine-glow pointer-events-none" />
 
       {/* Navbar Estática */}
-      <header className="h-16 md:h-20 w-full flex-shrink-0 glass-morphism border-b border-amber-500/10 px-4 md:px-6 flex items-center justify-between relative z-30 shadow-md">
+      <header className="h-16 md:h-20 w-full flex-shrink-0 glass-morphism border-b border-amber-500/10 px-4 md:px-6 flex items-center justify-between relative z-30 shadow-md no-print">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 md:w-11 md:h-11 bg-gradient-to-br from-amber-950/40 to-amber-900/10 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/5 border border-amber-500/20 flex-shrink-0">
             <EliasLogo className="w-6.5 h-6.5" />
@@ -692,34 +696,80 @@ export default function ChatInterface() {
               Consejo y Doctrina Bíblica
             </p>
           </div>
+
+          {/* Selector de Vistas - Desktop */}
+          <div className="hidden sm:flex items-center gap-2 ml-6 bg-stone-900/60 p-1 rounded-xl border border-amber-500/10 no-print">
+            <button
+              onClick={() => setActiveView('chat')}
+              className={`px-3.5 py-1.5 rounded-lg text-[10px] md:text-xs font-heading font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                activeView === 'chat'
+                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-stone-950 shadow-md shadow-amber-500/10'
+                  : 'text-stone-400 hover:text-amber-200 hover:bg-stone-850/50'
+              }`}
+            >
+              💬 Mentor
+            </button>
+            <button
+              onClick={() => setActiveView('sunday-school')}
+              className={`px-3.5 py-1.5 rounded-lg text-[10px] md:text-xs font-heading font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                activeView === 'sunday-school'
+                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-stone-950 shadow-md shadow-amber-500/10'
+                  : 'text-stone-400 hover:text-amber-200 hover:bg-stone-850/50'
+              }`}
+            >
+              🏫 Escuela Dominical
+            </button>
+          </div>
         </div>
 
         {/* Navbar Actions: Hamburger Drawer Trigger & London Badge */}
         <div className="flex items-center gap-3.5 flex-shrink-0">
+          {/* Mobile Selector de Vistas */}
+          <div className="flex sm:hidden items-center gap-1 bg-stone-900/60 p-0.5 rounded-lg border border-amber-500/10 no-print">
+            <button
+              onClick={() => setActiveView('chat')}
+              className={`px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
+                activeView === 'chat' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
+              }`}
+            >
+              💬
+            </button>
+            <button
+              onClick={() => setActiveView('sunday-school')}
+              className={`px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
+                activeView === 'sunday-school' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
+              }`}
+            >
+              🏫
+            </button>
+          </div>
           <span className="hidden lg:inline text-[10px] font-bold text-amber-400/90 border border-amber-500/20 bg-amber-950/15 px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm select-none">
             Doctrina Bautista Fundamental
           </span>
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className={`w-10 h-10 flex lg:hidden items-center justify-center rounded-xl border transition-all duration-300 shadow-md active:scale-95 cursor-pointer ${isSidebarOpen
-              ? 'bg-amber-950/40 border-amber-500/50 text-amber-300 shadow-lg shadow-amber-500/10'
-              : 'bg-stone-900/60 border-amber-500/25 text-amber-400 hover:border-amber-500/40 hover:text-amber-300 shadow-md shadow-amber-500/5'
-              }`}
-            title={isSidebarOpen ? "Ocultar Historial" : "Mostrar Historial"}
-          >
-            {/* Elegant bold hamburger SVG matching the user's icon */}
-            <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+          {activeView === 'chat' && (
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className={`w-10 h-10 flex lg:hidden items-center justify-center rounded-xl border transition-all duration-300 shadow-md active:scale-95 cursor-pointer ${isSidebarOpen
+                ? 'bg-amber-950/40 border-amber-500/50 text-amber-300 shadow-lg shadow-amber-500/10'
+                : 'bg-stone-900/60 border-amber-500/25 text-amber-400 hover:border-amber-500/40 hover:text-amber-300 shadow-md shadow-amber-500/5'
+                }`}
+              title={isSidebarOpen ? "Ocultar Historial" : "Mostrar Historial"}
+            >
+              {/* Elegant bold hamburger SVG matching the user's icon */}
+              <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          )}
         </div>
       </header>
 
       {/* Area Central: Chat a la izquierda y Sidebar a la derecha */}
       <div className="flex-1 w-full flex overflow-hidden relative">
-
-        {/* Lado Izquierdo: Ventana de Chat Principal */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden relative">
+        {activeView === 'chat' ? (
+          <>
+            {/* Lado Izquierdo: Ventana de Chat Principal */}
+            <div className="flex-1 flex flex-col h-full overflow-hidden relative">
           <main className="flex-1 w-full overflow-hidden relative">
             <div className="h-full w-full overflow-y-auto chat-scroll flex flex-col items-center">
               <div className="w-full max-w-3xl px-3.5 sm:px-6 md:px-10 pt-8 pb-32 space-y-12">
@@ -1117,7 +1167,12 @@ export default function ChatInterface() {
             </div>
           </div>
         </aside>
+        </>
+      ) : (
+        <SundaySchoolGenerator formatContent={formatContent} />
+      )}
       </div>
+
 
       {/* Modal / Overlay del Lector Bíblico */}
       {activeVerseRef && (
