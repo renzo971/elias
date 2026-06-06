@@ -30,6 +30,8 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
   const [isGenerating, setIsGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState<'idle' | 'generating' | 'finalized'>('idle');
+  const [streamProgress, setStreamProgress] = useState(0);
 
   const folletoRef = useRef<HTMLDivElement>(null);
 
@@ -39,6 +41,8 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
 
     setIsGenerating(true);
     setGeneratedResource('');
+    setGenerationStatus('generating');
+    setStreamProgress(0);
 
     try {
       const response = await fetch('/api/sunday-school', {
@@ -64,9 +68,19 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
 
       if (!reader) throw new Error('No se pudo leer la respuesta');
 
+      // Para simular un progreso visual, vamos a mantener un contador del total de chunks recibidos.
+      let totalChunks = 0;
+      const estimatedTotalChunks = 120; // Estimación para una respuesta completa
+      let isFinalReceived = false;
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
+
+        totalChunks++;
+        // Actualizar progreso basado en chunks recibidos (simulado hasta un 95%)
+        const progress = Math.min((totalChunks / estimatedTotalChunks) * 100, 95);
+        setStreamProgress(Math.round(progress));
 
         const chunk = decoder.decode(value);
         const lines = chunk.split('\n');
@@ -76,7 +90,12 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
             try {
               const data = JSON.parse(line.slice(6));
               if (data.error) throw new Error(data.error);
-              if (data.is_final) break;
+              if (data.is_final) {
+                isFinalReceived = true;
+                setGenerationStatus('finalized');
+                setStreamProgress(100);
+                break;
+              }
               if (data.content) {
                 setGeneratedResource((prev) => prev + data.content);
               }
@@ -85,12 +104,15 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
             }
           }
         }
+
+        if (isFinalReceived) break;
       }
     } catch (error: any) {
       console.error('Error generating Sunday School resource:', error);
       setGeneratedResource('Error al generar recurso: ' + error.message);
     } finally {
       setIsGenerating(false);
+      setGenerationStatus('finalized');
     }
   };
 
@@ -443,6 +465,33 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
 
       {/* Preview and Action toolbar */}
       <div className="flex-1 bg-[#0d0b0a]/40 flex flex-col overflow-hidden relative">
+        
+        {/* Barra de Progreso de Generación (streaming) */}
+        {generationStatus === 'generating' && (
+          <div className="w-full bg-stone-900/80 border-b border-amber-500/20 px-6 py-3 flex items-center gap-3 animate-pulse">
+            <div className="w-5 h-5 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin flex-shrink-0" />
+            <div className="flex-1 flex flex-col gap-1">
+              <div className="flex justify-between text-xs font-bold font-heading text-amber-400 uppercase tracking-wider">
+                <span>Generando Material... ({streamProgress}%)</span>
+              </div>
+              <div className="w-full h-1.5 bg-stone-800 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-amber-400 to-amber-600 transition-all duration-300 ease-out"
+                  style={{ width: `${streamProgress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+        {generationStatus === 'finalized' && (
+          <div className="w-full bg-green-900/30 border-b border-green-500/20 px-6 py-3 flex items-center gap-3">
+            <span className="text-green-400 text-lg">✓</span>
+            <span className="text-xs font-bold font-heading text-green-400 uppercase tracking-wider">
+              Generación Completada — Folleto Listo para Descargar
+            </span>
+          </div>
+        )}
+
         <div className="h-14 border-b border-amber-500/10 px-6 flex items-center justify-between bg-stone-950/20 no-print flex-shrink-0">
           <span className="text-xs text-stone-400 font-serif">Maquetación del Folleto Dominical</span>
           <div className="flex items-center gap-3">
@@ -540,7 +589,7 @@ export default function SundaySchoolGenerator({ formatContent }: SundaySchoolGen
                         transform: 'rotate(-2deg)'
                       }}
                     >
-                      <span style={{ fontSize: '10px', tracking: '0.1em', textTransform: 'uppercase', fontWeight: 900 }}>Escena</span>
+                      <span style={{ fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 900 }}>Escena</span>
                       <span style={{ fontSize: '30px', fontWeight: 900, lineHeight: 1 }}>{lesson.numeroEscena}</span>
                     </div>
 
