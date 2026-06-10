@@ -1,252 +1,235 @@
-# AGENTS.md — Elias Project
+# 🤖 AGENTS.md — Guía Canónica de Agentes de IA y Reglas del Código
 
-> This file is the canonical reference for all AI agents working on this codebase.
-> Read it in full before taking any action. Prioritize the rules here over generic knowledge.
-
----
-
-## 1. Project Identity
-
-**Elias** is a faith-focused AI assistant web app. It provides a conversational interface powered by NVIDIA NIM AI models and an AI-generated Sunday School resource generator, both served via Astro SSR on Vercel.
-
-### Tech Stack
-| Layer | Technology |
-|---|---|
-| Framework | **Astro 6** (`output: 'server'`) |
-| UI Library | **React 19** via `@astrojs/react` |
-| Styling | **TailwindCSS v4** (Vite plugin, no config file) |
-| AI Provider | **NVIDIA NIM** via `openai` v6 SDK (base URL: `integrate.api.nvidia.com/v1`) |
-| LLM Model | `meta/llama-3.1-8b-instruct` |
-| Image Model | `qwen/qwen-image` via `ai.api.nvidia.com/v1/genai` |
-| PDF Export | `html2pdf.js` |
-| Deployment | **Vercel** via `@astrojs/vercel` adapter |
-| Runtime | **Node.js ≥ 22.12** |
+> **[IMPORTANTE]**
+> Este archivo es la referencia y conjunto de instrucciones canónicas para todos los asistentes de codificación de IA (como Gemini, Claude, GPT, Antigravity, etc.) que operen en el proyecto **Elias**.
+> Los agentes de IA DEBEN analizar, comprender y adherirse estrictamente a todas las directrices, restricciones y patrones de arquitectura documentados aquí. Las reglas en este archivo anulan instrucciones genéricas o patrones de frameworks desactualizados.
 
 ---
 
-## 2. Essential Commands
+## 1. Misión e Identidad del Proyecto
 
-```bash
-npm run dev      # Dev server → http://localhost:4321
-npm run build    # Production build → ./dist
-npm run preview  # Preview production build locally
-npm run astro    # Astro CLI (astro check, astro add, etc.)
-```
-
-> Always run `npm run dev` to verify changes. There is no automated test suite.
+**Elias** es una aplicación web enfocada en la fe que sirve como asistente de IA y generador de recursos para la Escuela Dominical.
+- **Objetivo**: Proporcionar una interfaz conversacional impulsada por modelos de IA de NVIDIA NIM que representen a un teólogo Bautista Fundamental conservador, y generar recursos educativos (planes de lecciones, actividades, folletos PDF, imágenes generadas) para maestros de Escuela Dominical.
+- **Límites Teológicos**: Alineación estricta con la **Doctrina Bautista Fundamental** y la exégesis bíblica histórica. Todas las referencias bíblicas deben utilizar la traducción **Reina-Valera 1960 (RVR1960)**.
 
 ---
 
-## 3. Project Architecture
+## 2. Pila Tecnológica y Mapa de Arquitectura
 
+### Tecnologías Principales
+- **Framework**: Astro 6.x (`output: 'server'` para SSR)
+- **Biblioteca de UI**: React 19.x (a través de la integración `@astrojs/react`)
+- **Estilos**: TailwindCSS v4.x (basado en plugin de Vite, sin archivo `tailwind.config.js`)
+- **Modelos de IA**: APIs de NVIDIA NIM
+  - **LLM**: `meta/llama-3.1-8b-instruct` (SDK de OpenAI)
+  - **Gen de Imagen**: `qwen/qwen-image` (API de consumo directo mediante fetch)
+- **Exportación PDF**: `html2pdf.js` (renderizado de PDF dinámico del lado del cliente)
+- **Entorno de Ejecución y Despliegue**: Node.js ≥ 22.12, desplegado en Vercel a través del adaptador `@astrojs/vercel`
+
+### Arquitectura del Proyecto y Roles de Archivos
 ```
 elias/
 ├── src/
-│   ├── pages/
-│   │   ├── index.astro              # Entry point / shell
-│   │   └── api/
-│   │       ├── chat.ts              # POST /api/chat — Gemini chat endpoint
-│   │       └── sunday-school.ts     # POST /api/sunday-school — content generation
-│   ├── components/
-│   │   ├── ChatInterface.tsx        # Main React chat UI (client-side)
-│   │   ├── ChatInterface.astro      # Astro wrapper for ChatInterface
-│   │   ├── SundaySchoolGenerator.tsx # Sunday school resource generator UI
-│   │   ├── EliasLogo.tsx            # Animated SVG logo component
-│   │   └── Welcome.astro            # Landing/welcome screen
-│   ├── services/
-│   │   └── chatService.ts           # Gemini API abstraction layer
-│   ├── layouts/                     # Astro layout wrappers
-│   ├── data/                        # Static content / prompts
-│   ├── assets/                      # Static assets (images, fonts)
+│   ├── pages/                       # Páginas de Astro (Rutas SSR) y Endpoints de API
+│   │   ├── index.astro              # Punto de entrada principal y contenedor de diseño (layout)
+│   │   └── api/                     # Backend API handlers (Node.js/Astro SSR)
+│   │       ├── chat.ts              # POST /api/chat — Chat completion streaming (NVIDIA LLM)
+│   │       └── sunday-school.ts     # POST /api/sunday-school — Sunday School text generation + image generation
+│   ├── components/                  # Componentes de React y Astro
+│   │   ├── ChatInterface.tsx        # Interfaz de usuario interactiva de Chat (React, del lado del cliente, 61KB)
+│   │   ├── ChatInterface.astro      # Contenedor Astro que incluye <ChatInterface client:only="react" />
+│   │   ├── SundaySchoolGenerator.tsx # Generador de lecciones y exportación PDF (React, del lado del cliente, 72KB)
+│   │   ├── EliasLogo.tsx            # Componente de logo sagrado SVG animado (React)
+│   │   └── Welcome.astro            # Interfaz de presentación / Landing (Astro)
+│   ├── services/                    # Lógica de Negocio Principal / APIs del lado del cliente
+│   │   └── chatService.ts           # SSE Stream parsing, local storage sessions, session capping
+│   ├── layouts/                     # Contenedores de diseño (Layouts) de páginas
+│   ├── data/                        # Metadatos estáticos / configuraciones de prompts
+│   ├── assets/                      # Fuentes, logotipos, recursos estáticos locales
 │   └── styles/
-│       └── global.css               # Design tokens, animations, print styles
-├── public/
-│   └── grid.svg                     # Background texture pattern
-├── astro.config.mjs                 # Astro core config
-├── tsconfig.json                    # Extends astro/tsconfigs/strict
-├── .env                             # Secret env vars (never commit)
-├── .env.example                     # Env var template
-└── .agents/skills/                  # AI skill definitions (see §7)
+│       └── global.css               # Tema definiciones (@theme), tipografía, animaciones personalizadas, estilos de impresión
+├── public/                          # Carpeta pública estática
+│   └── grid.svg                     # Patrón decorativo de cuadrícula de fondo
+├── astro.config.mjs                 # Configuración de integraciones de Astro (React + Tailwind v4 Vite)
+├── tsconfig.json                    # Configuración estricta de TypeScript
+├── .env                             # Claves de API secretas (solo local, NUNCA subirlas a git)
+├── .env.example                     # Referencia para variables de entorno
+└── .agents/skills/                  # Carpetas de referencia de habilidades especializadas
 ```
 
 ---
 
-## 4. Critical Conventions
+## 3. Convenciones de Codificación Estrictas para Agentes de IA
 
-### TypeScript
-- Config extends `astro/tsconfigs/strict` — **zero TypeScript errors allowed**.
-- Check generated types in `.astro/types.d.ts` for Astro globals.
-- Always import `React` explicitly in `.tsx` files: `import React from 'react'`.
+Para mantener el código limpio y evitar fallas en la compilación o el despliegue, debes seguir estas convenciones:
 
-### Astro & SSR
-- All pages are SSR by default (`output: 'server'`). Do **not** add `export const prerender = true` unless intentional.
-- Astro components (`.astro`) handle routing and SSR data fetching.
-- React components (`.tsx`) handle interactive, stateful UI and run client-side.
-- Wrap React components with `client:load` or `client:only="react"` when used inside `.astro` files.
+### 3.1. TypeScript y Modo Estricto
+- **Cero Errores de Tipo**: El proyecto extiende `astro/tsconfigs/strict`. Cualquier error de tipo detendrá la compilación en producción.
+- **Importaciones Explícitas de React**: Escribe siempre `import React from 'react';` en la parte superior de cada archivo `.tsx`.
+- **Prohibido el Tipo `any`**: Define interfaces explícitas para componentes, hooks, parámetros y respuestas de API. Utiliza `any` únicamente si se trata de fragmentos crudos de respuestas de LLM y el mapeo de tipos es inviable, justificándolo en comentarios.
+- **Globales de Astro Tipados**: Si accedes a variables globales de Astro, verifica su tipado en `.astro/types.d.ts`.
 
-### API Routes
-- Located at `src/pages/api/`. Each file exports `GET` / `POST` handler functions.
-- Return `Response` objects directly (Astro's Web API response model).
-- All API logic lives in `src/services/`; keep route files thin.
+### 3.2. Astro Islands y SSR (Server-Side Rendering)
+- **SSR por Defecto**: `output: 'server'` está configurado en `astro.config.mjs`. No agregues `prerender = true` a menos que sea explícitamente requerido.
+- **Directivas de Hidratación**: Los componentes de React (`.tsx`) que manejan estados o efectos secundarios (ej: `ChatInterface.tsx`, `SundaySchoolGenerator.tsx`) deben renderizarse en páginas de Astro usando `client:load` o `client:only="react"`.
+  - Utiliza `client:only="react"` para bibliotecas que dependan de globales del navegador (como `html2pdf.js` o `localStorage`).
+- **Aislamiento de Datos**: Mantén la lógica de APIs en las rutas de backend `src/pages/api/*` o en los servicios `src/services/*`. No coloques llamadas directas a APIs de terceros o lecturas de claves privadas en componentes visuales.
 
-### Environment Variables
-- `PUBLIC_NVIDIA_API_KEY` — the only required AI key; used server-side in both API routes.
-- Client-exposed vars: must use `PUBLIC_` prefix (already the case for the NVIDIA key).
-- **Never commit `.env`**. Use `.env.example` to document required keys.
+### 3.3. Paradigma CSS-First de TailwindCSS v4.x
+- **Sin archivo `tailwind.config.js`**: TailwindCSS v4 utiliza la directiva `@theme` dentro de `src/styles/global.css`. Toda la configuración, tokens personalizados y fuentes se definen allí.
+- **Uso de Tokens Personalizados**: No escribas valores de color HEX o HSL directamente en las clases de utilidad. Utiliza siempre las variables o clases definidas por el tema:
+  - Colores de texto: `text-primary`, `text-ethereal`, `text-accent`
+  - Fondos: `bg-warmstone`, `bg-[#0d0b0a]` (color carbón oscuro del proyecto)
+  - Fuentes: `font-heading` (`Cinzel`), `font-serif` (`Lora`), `font-body` (`Plus Jakarta Sans`)
+- **Sin Colores Arbitrarios**: Evita clases arbitrarias como `bg-[#1a2b3c]` para componentes principales. Mantén la paleta de tokens.
 
-> ⚠️ Both `import.meta.env.NVIDIA_API_KEY` and `import.meta.env.PUBLIC_NVIDIA_API_KEY` are checked at runtime for compatibility. The canonical key name is `PUBLIC_NVIDIA_API_KEY`.
-
-### TailwindCSS v4
-- CSS-first config: design tokens are defined in `src/styles/global.css` under `@theme {}`.
-- No `tailwind.config.js`. All customization via CSS variables.
-- Import global styles in each Astro layout/page that needs them.
+### 3.4. Variables de Entorno
+- Variable de entorno canónica: `PUBLIC_NVIDIA_API_KEY` (Expuesta al cliente, validada en el servidor).
+- Durante la ejecución, se validan tanto `import.meta.env.NVIDIA_API_KEY` como `import.meta.env.PUBLIC_NVIDIA_API_KEY` como mecanismos de seguridad alternativos.
+- **Nunca envíes el archivo `.env` al repositorio**. Modifica `.env.example` si introduces una nueva variable.
 
 ---
 
-## 5. Design System
+## 4. Sistema de Diseño y Estética
 
-This app uses a **warm, sacred, library aesthetic** — NOT the generic Slate/Blue palette. Always apply the actual design tokens defined in `global.css`.
+Elias utiliza una **estética sagrada inspirada en una biblioteca antigua**, orientada a representar la sabiduría antigua, las Escrituras y la contemplación profunda. La interfaz debe lucir premium, oscura, pulida y solemne.
 
-### Color Palette
-| Token | Value | Usage |
+### Tokens de Diseño de Colores y Tipografía
+| Categoría | Nombre del Token | Estilo Visual / Uso |
 |---|---|---|
-| `--color-primary` | `#dfb15b` | Gold — primary brand, highlights |
-| `--color-primary-dark` | `#b88a3e` | Darker gold for hover states |
-| `--color-accent` | `#d97706` | Amber — CTAs, active states |
-| `--color-ethereal` | `#fcfbf7` | Warm ivory — light text |
-| `--color-warmstone` | `#292524` | Dark stone — card backgrounds |
-| Background | `#0d0b0a` | Deep charcoal-black |
-| Foreground | `#f5f5f4` | Stone-100 warm ivory |
+| **Color** | `--color-primary` (`#dfb15b`) | Oro / Luz Divina — Resaltados, iconos, acentos principales de la marca. |
+| **Color** | `--color-primary-dark` (`#b88a3e`)| Oro Bruñido — Estados hover, bordes, foco activo. |
+| **Color** | `--color-accent` (`#d97706`) | Ámbar Cálido — Botones de llamada a la acción (CTA), advertencias, elementos interactivos clave. |
+| **Color** | `--color-ethereal` (`#fcfbf7`) | Marfil Cálido — Texto de lectura de alto contraste, texto principal. |
+| **Color** | `--color-warmstone` (`#292524`)| Piedra Oscura — Fondos de tarjetas, contenedores. |
+| **Fondo** | `#0d0b0a` | Carbón-Negro Profundo — Fondo principal de la aplicación. |
+| **Texto/Frente**| `#f5f5f4` | Gris Marfil Cálido (Stone-100) — Texto base de la interfaz. |
+| **Tipografía**| `--font-heading` (`Cinzel`) | Serif — Encabezados de las Escrituras, títulos, texto solemne. |
+| **Tipografía**| `--font-serif` (`Lora`) | Serif — Versículos bíblicos, textos teológicos de lectura detallada. |
+| **Tipografía**| `--font-body` | Sans-Serif (`Plus Jakarta Sans`) — Entradas de chat, etiquetas de UI, menús. |
 
-### Typography
-| Role | Font | Fallback |
-|---|---|---|
-| Headings | `Cinzel` | Georgia, serif |
-| Body serif | `Lora` | Georgia, serif |
-| UI / Body | `Plus Jakarta Sans` | sans-serif |
-
-### Utility Classes (defined in `global.css`)
-- `.divine-glow` — radial gold ambient glow for hero sections
-- `.glass-morphism` — frosted glass header / nav
-- `.glass-card` — interactive glass card with hover lift
-- `.animate-fade-up` — entrance animation (0.8s cubic-bezier)
-- `.typing-cursor` — blinking gold cursor for streaming text
-- `.chat-scroll` — custom scrollbar (gold tint)
-- `.bubble-user` — amber gradient message bubble
-- `.bubble-assistant` — dark frosted glass message bubble
-- `.text-glow` — warm gold text glow
-- `.print-area` — print-safe layout for exported resources
-
-### Design Rules
-- **Never use raw Tailwind slate/blue** as primary colors — use the gold/amber palette.
-- Background gradient: `bg-[#0d0b0a]` with `.divine-glow` overlay.
-- Borders: `border-[rgba(223,177,91,0.08)]` for subtle gold separation.
-- Effects: `backdrop-blur-xl`, gold box shadows for depth.
-- Responsive: mobile-first with `sm:`, `md:`, `lg:` breakpoints.
-- Animations: prefer `animate-fade-up` for entrances; use `transition-all duration-300` for interactions.
+### Clases de Utilidad Visual (`global.css`)
+- `.divine-glow`: Superposición de resplandor radial dorado suave. Colocar debajo de las texturas de fondo.
+- `.glass-morphism`: Fondo oscuro difuminado (`backdrop-filter: blur(24px)`) para encabezados y barras laterales.
+- `.glass-card`: Panel translúcido con efecto hover (elevación + borde iluminado).
+- `.animate-fade-up`: Animación de entrada suave para texto de chat y tarjetas de UI.
+- `.typing-cursor`: Cursor dorado parpadeante tipo terminal para indicar la transmisión del LLM en curso.
+- `.chat-scroll`: Barras de desplazamiento ultra delgadas de color dorado.
+- `.bubble-user`: Burbuja de mensaje del usuario con degradado marrón-ámbar.
+- `.bubble-assistant`: Burbuja translúcida de color piedra oscura para las respuestas de Elias.
+- `.text-glow`: Resplandor de texto sutil para términos divinos o títulos.
+- `.print-area`: Estilos optimizados para impresión (fondo blanco puro, tipografía oscura de alto contraste, oculta botones e interfaces de usuario).
 
 ---
 
-## 6. Common Gotchas
+## 5. Patrones de Integración de NVIDIA NIM
 
-| Issue | Solution |
-|---|---|
-| TypeScript errors in `.astro` | Check `.astro/types.d.ts`; run `npm run astro check` |
-| React hooks not working | Add `client:load` or `client:only="react"` directive |
-| Env var undefined client-side | Add `PUBLIC_` prefix to expose it to the browser |
-| Vercel deploy fails | Run `npm run build` first; check adapter config in `astro.config.mjs` |
-| Tailwind class not applying | Ensure `global.css` is imported in the layout; check `@theme` token names |
-| PDF export issues | `html2pdf.js` requires `client:only`; use `.print-area` class for print layout |
-| AI streaming not working | Use `ReadableStream` in API route; handle `TransformStream` carefully |
+### 5.1. API de Streaming de Chat (`/api/chat.ts`)
+La API de chat utiliza el SDK de `OpenAI` configurado con la URL base de NVIDIA. Transmite las respuestas en fragmentos (chunks), separando la respuesta de chat en markdown de los metadatos JSON finales.
 
----
+**Prompt de Sistema para la Alineación Teológica**:
+- Configura a Elias para actuar como un teólogo bautista fundamental conservador.
+- Exige obligatoriamente un bloque JSON de metadatos al final de las respuestas.
 
-## 7. Available Skills
-
-The `.agents/skills/` directory contains specialist skill definitions. Always check which skill applies before writing code:
-
-| Skill | When to Use |
-|---|---|
-| `astro` | Working with `.astro` files, SSR config, content collections |
-| `react-best-practices` | React components, performance, hooks, data fetching |
-| `tailwind-css-patterns` | TailwindCSS utilities, responsive layouts, design systems |
-| `frontend-design` | Building new UI components, pages, or improving aesthetics |
-| `typescript-advanced-types` | Complex generics, utility types, strict type safety |
-| `composition-patterns` | Component architecture, compound components, render props |
-| `nodejs-backend-patterns` | API routes, middleware, error handling, streaming |
-| `nodejs-best-practices` | Node.js patterns, async flows, security |
-| `deploy-to-vercel` | Deployments, preview URLs, Vercel config |
-| `seo` | Meta tags, structured data, sitemap |
-| `accessibility` | WCAG compliance, keyboard nav, screen readers |
-
-> To use a skill: read `.agents/skills/<skill-name>/SKILL.md` before starting work.
-
----
-
-## 8. Agent Workflow
-
-Follow this order of operations for every task:
-
-1. **Read first** — check this file and any relevant skill's `SKILL.md` before writing code.
-2. **Understand the goal** — clarify requirements; do not assume.
-3. **Check existing patterns** — look at `src/components/` and `src/services/` before creating new abstractions.
-4. **Respect the design system** — use tokens from `global.css`, not ad-hoc colors.
-5. **Zero TypeScript errors** — run `npm run astro check` mentally; all types must be correct.
-6. **Verify** — test with `npm run dev` and check `localhost:4321`.
-7. **No secrets in code** — env vars go in `.env`; document new ones in `.env.example`.
-
-### Prohibited Actions
-- ❌ Committing `.env` or any real credentials
-- ❌ Using `any` type in TypeScript without explicit justification
-- ❌ Adding `export const prerender = true` to API routes
-- ❌ Using hardcoded colors instead of design system tokens
-- ❌ Installing packages without checking if an equivalent already exists in `package.json`
-
----
-
-## 9. Key Files Reference
-
-| File | Purpose |
-|---|---|
-| `astro.config.mjs` | Core Astro config: adapter, integrations, Vite plugins |
-| `tsconfig.json` | TypeScript strict mode config |
-| `src/styles/global.css` | Design tokens (`@theme`), animations, print styles |
-| `src/services/chatService.ts` | Chat session manager, SSE stream reader, LocalStorage helpers |
-| `src/pages/api/chat.ts` | Chat endpoint — NVIDIA NIM LLM streaming via `openai` SDK |
-| `src/pages/api/sunday-school.ts` | Sunday school generator — LLM stream + image via NVIDIA NIM |
-| `.env.example` | Required environment variable documentation |
-| `public/grid.svg` | Background texture (SVG grid pattern) |
-
-### NVIDIA NIM Integration Pattern
-
-Both API routes instantiate the `openai` SDK pointed at NVIDIA:
-
-```ts
-import OpenAI from 'openai';
+**Configuración del Cliente**:
+```typescript
+import OpenAI from "openai";
 
 const client = new OpenAI({
-  baseURL: 'https://integrate.api.nvidia.com/v1',
-  apiKey: import.meta.env.PUBLIC_NVIDIA_API_KEY,
-});
-
-// Chat completions (streaming)
-const completion = await client.chat.completions.create({
-  model: 'meta/llama-3.1-8b-instruct',
-  messages: [...],
-  temperature: 0.3,
-  max_tokens: 1500,
-  stream: true,
+  baseURL: "https://integrate.api.nvidia.com/v1",
+  apiKey: nvidiaKey,
 });
 ```
 
-Image generation uses a direct `fetch` to a separate NVIDIA endpoint:
+**Lógica de Streaming**:
+1. El servidor lee el historial de chat y el prompt del usuario.
+2. El servidor solicita el stream al modelo `meta/llama-3.1-8b-instruct`.
+3. El servidor transmite los fragmentos de texto plano utilizando Server-Sent Events (`data: {...}`).
+4. El servidor procesa el bloque final que contiene el JSON ```json ... ``` con metadatos estructurados (referencias a versículos, etiquetas, teólogos) y lo envía con `is_final: true`.
 
-```ts
-// Image generation (sunday-school.ts)
-const imageResponse = await fetch('https://ai.api.nvidia.com/v1/genai/qwen/qwen-image', {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${nvidiaKey}` },
+### 5.2. API de Generación de Escuela Dominical (`/api/sunday-school.ts`)
+Genera un plan de lecciones completo basado en delimitadores de texto estructurados:
+`[NUMERO_ESCENA]`, `[TITULO]`, `[PASAGE]`, `[VERSICULO_REF]`, `[VERSICULO_TEXTO]`, `[LECCION]`, `[MATERIALES]`, `[INSTRUCCIONES]`, `[JUEGO_TITULO]`, `[JUEGO_TEXTO]`, `[DESAFIO_TITULO]`, `[DESAFIO_TEXTO]`, `[ASISTENCIA]`, `[ALUMNO_TIPO_JUEGO]`, `[ALUMNO_CONTENIDO]`, `[ALUMNO_INSTRUCCIONES]`, `[ALUMNO_IMAGEN_PROMPT]`.
+
+**Integración de Generación de Imagen**:
+Una vez completada la generación de la lección, el servidor extrae el prompt de `[ALUMNO_IMAGEN_PROMPT]` y realiza una solicitud POST al modelo de imágenes de NVIDIA:
+```typescript
+const imageResponse = await fetch("https://ai.api.nvidia.com/v1/genai/qwen/qwen-image", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${nvidiaKey}`,
+  },
   body: JSON.stringify({ prompt: extractedPrompt, samples: 1 }),
 });
-// Response: { artifacts: [{ base64: '...' }] } or { data: [{ b64_json: '...' }] }
 ```
+*Nota*: La API procesa múltiples formatos de respuesta según la puerta de enlace de NIM:
+- `result.artifacts[0].base64`
+- `result.data[0].b64_json`
+- `result.image_base64`
+
+---
+
+## 6. Servicios del Cliente y Gestión de Sesiones
+
+- **Cliente de Streaming**: `src/services/chatService.ts` implementa el bucle decodificador para procesar el flujo de datos (`ReadableStream`).
+- **Gestión de Sesiones**: Guarda el historial en `localStorage`.
+  - **Límite de Sesiones**: Máximo de 6 sesiones activas simultáneas. La sesión más antigua (según el timestamp `lastInteraction`) se elimina automáticamente cuando se crea la séptima sesión.
+  - **Generación de Títulos**: Extracción limpia y descriptiva de títulos basada en la primera pregunta.
+
+---
+
+## 7. Problemas Comunes y Resolución de Errores (Troubleshooting)
+
+| Problema | Causa Raíz | Solución |
+|---|---|---|
+| **Fallo en la verificación de tipos de Astro** | Declaraciones faltantes en `.astro/types.d.ts` o incompatibilidad de tipos. | Ejecuta `npm run astro check` y valida que las interfaces de los componentes estén definidas estrictamente. |
+| **`html2pdf.js` lanza error: `window is undefined`** | La biblioteca de PDF intenta ejecutarse del lado del servidor. | Asegúrate de que el componente contenga la directiva `client:only="react"`. No importes `html2pdf.js` en la raíz del archivo; impórtalo dinámicamente (`import('html2pdf.js')`) dentro de hooks o manejadores de eventos exclusivos del navegador. |
+| **Las clases de Tailwind no tienen efecto** | Uso de clases antiguas de la v3 o nombres de estilos no asignados a las nuevas variables CSS de la v4. | Agrega tus clases y variables personalizadas en `global.css` dentro del bloque `@theme`. Revisa la referencia de clases en la Sección 4. |
+| **La generación de imagen retorna vacío** | Discrepancia en el esquema de respuesta de la API de NVIDIA o tiempo de espera agotado. | Valida la extracción de base64 revisando múltiples rutas (`result.artifacts`, `result.data`, o `result.image_base64`). Configura el tiempo de espera (timeout) de la llamada en 30 segundos. |
+| **El servidor de desarrollo falla al iniciar** | Variables de entorno no configuradas en local. | Verifica que el archivo `.env` contenga la clave `PUBLIC_NVIDIA_API_KEY`. Valídalo con `.env.example`. |
+
+---
+
+## 8. Comandos de Desarrollo y Flujo de Trabajo
+
+Los agentes de IA deben ejecutar estos scripts dentro del directorio raíz del espacio de trabajo antes de dar por terminada cualquier tarea.
+
+### Comandos de Ejecución
+```bash
+# 1. Iniciar el servidor de desarrollo local para verificar cambios visuales
+npm run dev
+
+# 2. Validar que no haya errores de tipos en Astro ni TypeScript
+npm run astro check
+
+# 3. Validar el proceso de compilación a producción y configuración de Vercel
+npm run build
+
+# 4. Previsualizar la build de producción localmente para pruebas de SSR
+npm run preview
+```
+
+### Directrices para Agentes de IA
+- **No Adivinar**: Lee los archivos por completo antes de escribir modificaciones. Consulta el mapa de archivos y las rutas correctas.
+- **Proteger Credenciales**: NUNCA guardes claves en archivos bajo control de versiones. Respeta el archivo `.gitignore`.
+- **Revisar el Sistema de Diseño**: Evita usar valores Hex/HSL directamente en las clases CSS de Tailwind. Reemplázalos con tokens de la paleta sagrada.
+- **Mantener Limpio el Código**: Elimina comentarios temporales, registros de depuración (`console.log`) e importaciones no utilizadas antes de la entrega final.
+
+---
+
+## 9. Habilidades Disponibles de Referencia
+
+| Habilidad (Skill) | Cuándo Utilizarla |
+|---|---|
+| `astro` | Trabajos con archivos `.astro`, configuraciones SSR, colecciones de contenido. |
+| `react-best-practices` | Componentes de React, optimización de rendimiento, hooks y fetching. |
+| `tailwind-css-patterns` | Utilidades de TailwindCSS, layouts responsivos, consistencia con el sistema de diseño. |
+| `frontend-design` | Desarrollo de nuevos componentes de UI, páginas o mejoras estéticas. |
+| `typescript-advanced-types` | Genéricos complejos, mapeos de tipo avanzados, tipificación estricta. |
+| `composition-patterns` | Estructuras de componentes en React, componentes compuestos y slots. |
+| `nodejs-backend-patterns` | Rutas de API, middlewares de Node.js, flujos de streams y códigos de estado. |
+| `nodejs-best-practices` | Flujos asíncronos limpios en Node.js, seguridad y optimización del backend. |
+| `deploy-to-vercel` | Configuraciones de despliegues y corrección de builds en Vercel. |
+| `seo` | Configuración de etiquetas meta, datos estructurados, OpenGraph. |
+| `accessibility` | Cumplimiento de pautas WCAG, navegación de teclado y lectores de pantalla. |
