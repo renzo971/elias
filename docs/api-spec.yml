@@ -1,0 +1,143 @@
+openapi: 3.0.0
+info:
+  title: API de Elias (Asistente Doctrinal y Escuela Dominical)
+  description: |
+    Especificación de la API de Elias. Proporciona endpoints del lado del servidor (SSR) mediante Astro para interactuar con un mentor teológico bautista fundamental y generar recursos didácticos de Escuela Dominical en tiempo real usando Server-Sent Events (SSE).
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:4321
+    description: Servidor de desarrollo local
+  - url: https://elias-bible.vercel.app
+    description: Servidor de producción en Vercel
+
+paths:
+  /api/chat:
+    post:
+      summary: Conversación doctrinal en streaming con Elias
+      description: |
+        Envía una pregunta teológica y el historial de mensajes de la sesión para recibir una respuesta pastoral en tiempo real en formato de stream Server-Sent Events (SSE). La respuesta incluye un bloque estructurado de metadatos al final.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                  description: Pregunta o consulta espiritual del usuario.
+                  example: "¿Qué es la seguridad eterna?"
+                history:
+                  type: array
+                  description: Historial de mensajes anteriores de la sesión de chat.
+                  items:
+                    type: object
+                    properties:
+                      role:
+                        type: string
+                        enum: [user, assistant]
+                        description: Rol del autor del mensaje.
+                      content:
+                        type: string
+                        description: Contenido del mensaje enviado previamente.
+                  example: []
+              required:
+                - question
+      responses:
+        '200':
+          description: Stream SSE iniciado correctamente.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  Flujo de eventos en tiempo real (`data: ...\n\n`).
+                  
+                  **Eventos del flujo:**
+                  - Chunks de respuesta: `data: {"content": "palabra "}`
+                  - Evento de metadatos final: 
+                    `data: {"answer": "Respuesta completa...", "scripture": ["Juan 10:28"], "baptist_theologians": [{"name": "C.H. Spurgeon", "quote": "...", "work": "..."}], "baptist_principle": "...", "tags": ["seguridad", "salvacion"], "is_off_topic": false, "is_edifying": true, "is_final": true}`
+        '400':
+          description: Datos de entrada incorrectos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: "Error de servidor (ej: clave de NVIDIA API no configurada)."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/sunday-school:
+    post:
+      summary: Generación de lecciones de Escuela Dominical y recursos
+      description: |
+        Genera una lección de Escuela Dominical completa basada en un tema y grupo de edad específico. Devuelve el contenido en streaming delimitado por etiquetas, e incluye al final del flujo el base64 de una imagen infantil representativa generada por IA.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ageGroup:
+                  type: string
+                  description: Grupo de edad para el que se adapta la lección.
+                  example: "Primarios (7-9 años)"
+                topic:
+                  type: string
+                  description: Tema o pasaje bíblico de la lección.
+                  example: "Daniel en el foso de los leones"
+                resourceType:
+                  type: string
+                  description: Tipo de recurso didáctico a generar.
+                  example: "Folleto de Clase"
+                customDetails:
+                  type: string
+                  description: Detalles personalizados u objetivos específicos del maestro (opcional).
+                  example: "Enfocar en la fidelidad a Dios a pesar de la oposición"
+              required:
+                - ageGroup
+                - topic
+                - resourceType
+      responses:
+        '200':
+          description: Stream de la lección y generación de imagen iniciado correctamente.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  Flujo de eventos en tiempo real (`data: ...\n\n`).
+                  
+                  **Eventos del flujo:**
+                  - Chunks de lección con delimitadores: `data: {"content": "[TITULO]\nDaniel en el..."}`
+                  - Evento de imagen generada por IA: `data: {"alumno_imagen_base64": "data:image/png;base64,iVBORw0..."}`
+                  - Evento de finalización del stream: `data: {"is_final": true}`
+        '400':
+          description: Faltan parámetros obligatorios.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Error interno o caída de la API de imágenes de NVIDIA.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Mensaje descriptivo del error en español.
+          example: "NVIDIA_API_KEY no configurada"
+      required:
+        - error
