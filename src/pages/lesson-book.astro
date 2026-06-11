@@ -1,0 +1,25 @@
+---
+import Layout from "../layouts/Layout.astro";
+import LessonBookGenerator from "../components/LessonBookGenerator.tsx";
+---
+
+<Layout title="ELIAS - Libro de Clases Dominical">
+  <main class="min-h-screen w-full bg-[#0d0b0a] relative overflow-x-hidden">
+    <!-- Background Decor & Warm Divine Glow -->
+    <div class="fixed inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] pointer-events-none" />
+    <div class="fixed inset-0 divine-glow pointer-events-none" />
+    
+    <div class="relative z-10 py-6">
+      <LessonBookGenerator client:only="react" />
+    </div>
+  </main>
+</Layout>
+
+<style is:global>
+  html, body {
+    position: relative !important;
+    overflow: auto !important;
+    height: auto !important;
+  }
+</style>
+

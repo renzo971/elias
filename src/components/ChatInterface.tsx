@@ -9,6 +9,7 @@ import {
 import type { ChatSession } from '../services/chatService';
 import { confessionChapters } from '../data/confesion1689';
 import SundaySchoolGenerator from './SundaySchoolGenerator';
+import LessonBookGenerator from './LessonBookGenerator';
 
 
 // Componente del Logo Premium de ELÍAS
@@ -108,7 +109,7 @@ export default function ChatInterface() {
   // Estados de nuevas funcionalidades
   const [activeTab, setActiveTab] = useState<'history' | 'confession'>('history');
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeView, setActiveView] = useState<'chat' | 'sunday-school'>('chat');
+  const [activeView, setActiveView] = useState<'chat' | 'sunday-school' | 'lesson-book'>('chat');
 
 
   // Lector Bíblico (Modal)
@@ -717,7 +718,17 @@ export default function ChatInterface() {
                   : 'text-stone-400 hover:text-amber-200 hover:bg-stone-850/50'
               }`}
             >
-              🏫 Escuela Dominical
+              🏫 Lección Individual
+            </button>
+            <button
+              onClick={() => setActiveView('lesson-book')}
+              className={`px-3.5 py-1.5 rounded-lg text-[10px] md:text-xs font-heading font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                activeView === 'lesson-book'
+                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-stone-950 shadow-md shadow-amber-500/10'
+                  : 'text-stone-400 hover:text-amber-200 hover:bg-stone-850/50'
+              }`}
+            >
+              📚 Libro de Clases
             </button>
           </div>
         </div>
@@ -731,6 +742,7 @@ export default function ChatInterface() {
               className={`px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
                 activeView === 'chat' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
               }`}
+              title="Mentor"
             >
               💬
             </button>
@@ -739,8 +751,18 @@ export default function ChatInterface() {
               className={`px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
                 activeView === 'sunday-school' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
               }`}
+              title="Lección"
             >
               🏫
+            </button>
+            <button
+              onClick={() => setActiveView('lesson-book')}
+              className={`px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
+                activeView === 'lesson-book' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
+              }`}
+              title="Libro"
+            >
+              📚
             </button>
           </div>
           <span className="hidden lg:inline text-[10px] font-bold text-amber-400/90 border border-amber-500/20 bg-amber-950/15 px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm select-none">
@@ -1168,8 +1190,10 @@ export default function ChatInterface() {
           </div>
         </aside>
         </>
-      ) : (
+      ) : activeView === 'sunday-school' ? (
         <SundaySchoolGenerator formatContent={formatContent} />
+      ) : (
+        <LessonBookGenerator />
       )}
       </div>
 

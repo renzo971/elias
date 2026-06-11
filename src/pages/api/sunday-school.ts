@@ -129,15 +129,17 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
               const abortController = new AbortController();
               const timeout = setTimeout(() => abortController.abort(), 30000);
 
-              const imageResponse = await fetch("https://ai.api.nvidia.com/v1/genai/qwen/qwen-image", {
+              const imageResponse = await fetch("https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json",
+                  "Accept": "application/json",
                   Authorization: `Bearer ${nvidiaKey}`,
                 },
                 body: JSON.stringify({
                   prompt: extractedPrompt,
-                  samples: 1,
+                  width: 1024,
+                  height: 1024
                 }),
                 signal: abortController.signal,
               });

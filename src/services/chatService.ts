@@ -19,15 +19,41 @@ export async function chatWithElias(
   const reader = response.body?.getReader();
   const decoder = new TextDecoder();
   let fullContent = '';
+  let buffer = '';
 
   if (!reader) throw new Error('No se pudo leer la respuesta');
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
+    if (done) {
+      if (buffer.trim()) {
+        const lines = buffer.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.error) throw new Error(data.error);
+              if (data.is_final) {
+                if (onChunk) onChunk('', '', data);
+                return data.answer || fullContent;
+              }
+              const content = data.content || '';
+              const reasoning = data.reasoning || '';
+              if (onChunk) onChunk(content, reasoning);
+              fullContent += content;
+            } catch (e) {
+              console.error('Error parsing stream chunk:', e);
+            }
+          }
+        }
+      }
+      break;
+    }
 
-    const chunk = decoder.decode(value);
-    const lines = chunk.split('\n');
+    const chunk = decoder.decode(value, { stream: true });
+    buffer += chunk;
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
 
     for (const line of lines) {
       if (line.startsWith('data: ')) {

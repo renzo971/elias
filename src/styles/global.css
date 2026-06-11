@@ -235,3 +235,21 @@ html, body {
   }
 }
 
+/* Page Break Helper classes for PDF export and Printing */
+.folleto-page {
+  page-break-inside: avoid !important;
+  break-inside: avoid !important;
+}
+
+@media print {
+  .folleto-page {
+    page-break-after: always !important;
+    break-after: page !important;
+  }
+  .folleto-page:last-child {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+}
+
+
