@@ -21,17 +21,17 @@ INSTRUCCIONES DE FORMATO:
 [PASAGE] (ej: Lucas 3:2-9, 18)
 [VERSICULO_REF] (ej: Apocalipsis 22:13)
 [VERSICULO_TEXTO] (ej: "Yo soy el Alfa y la Omega...")
-[LECCION] (La narración detallada y extendida de la lección, escrita en un formato fluido con suficiente profundidad pedagógica y teológica [mínimo 450-600 palabras] para servir como una guía de estudio de alta calidad para el maestro. Divide la historia completa en puntos clave con subtítulos lógicos y aplicaciones bíblicas prácticas adaptadas a la edad).
+[LECCION] (La narración detallada de la lección, escrita en un formato fluido con suficiente profundidad pedagógica y teológica [máximo de 250 a 300 palabras] para servir como una guía de estudio para el maestro que quepa exactamente en una sola página A4 a dos columnas. Divide la historia completa en puntos clave con subtítulos lógicos y aplicaciones bíblicas prácticas adaptadas a la edad).
 [MATERIALES] (Lista de materiales para la sección "Tengo Talento" o manualidad, uno por línea con un punto o guión).
 [INSTRUCCIONES] (Instrucciones paso a paso para hacer la manualidad de la sección "Tengo Talento", una por línea).
 [JUEGO_TITULO] (Título del juego o actividad de la sección "Luces, Cámara y Acción" o "Batallas").
-[JUEGO_TEXTO] (Explicación del juego o dinámica y cómo se relaciona con la lección).
+[JUEGO_TEXTO] (Explicación del juego o dinámica y cómo se relaciona con la lección [máximo 60-80 palabras]).
 [DESAFIO_TITULO] (Título de la sección de desafío o preguntas, ej: ¡Atrévete!).
-[DESAFIO_TEXTO] (Preguntas de repaso, aplicación diaria o lecturas devocionales para la semana).
+[DESAFIO_TEXTO] (Preguntas de repaso, aplicación diaria o lecturas devocionales para la semana [máximo 80-100 palabras]).
 [ASISTENCIA] (Detalles o ideas de incentivos de asistencia para motivar a los niños).
 [ALUMNO_TIPO_JUEGO] (Tipo de juego para el alumno: SOPA DE LETRAS, LABERINTO, CAMINO, CODIGO_SECRETO, CRUCIGRAMA, o DIBUJO_DIRIGIDO. Debe ser DINÁMICO, no siempre dibujo. Elige según el tema de la lección.)
 [ALUMNO_CONTENIDO] (El contenido del juego. Para SOPA DE LETRAS: palabras separadas por comas, luego una cuadrícula de letras. Para LABERINTO: coordenadas o descripción. Para CAMINO: números o pasos. Para CRUCIGRAMA: pistas y respuestas.)
-[ALUMNO_INSTRUCCIONES] (Instrucciones claras para el alumno sobre cómo completar el ejercicio.)
+[ALUMNO_INSTRUCCIONES] (Instrucciones claras para el alumno sobre cómo completar el ejercicio [máximo 30-45 palabras].)
 [ALUMNO_IMAGEN_PROMPT] (Prompt descriptivo en INGLÉS para generar una imagen infantil alusiva al tema, estilo cartoon, colores vivos, personajes bíblicos, apto para niños. Ejemplo: "Daniel in the lion's den surrounded by angels, cartoon style, vibrant colors, children's illustration, clean lines")
 
 ADAPTACIÓN POR EDAD:

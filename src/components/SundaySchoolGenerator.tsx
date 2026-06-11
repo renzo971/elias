@@ -197,6 +197,138 @@ const getOrGenerateMaze = (content: string): MazeCell[][] => {
   return maze;
 };
 
+const COLOR_THEMES = {
+  vibrant: {
+    name: 'Alegre / Infantil',
+    primary: '#e11d48',
+    primaryDark: '#be123c',
+    primaryText: '#9f1239',
+    bgLight: '#fff5f5',
+    accent: '#9333ea',
+    accentBg: '#faf5ff',
+    accentBorder: '#e9d5ff',
+    accentText: '#6b21a8',
+    border: '4px solid #e11d48',
+    cardBorder: '1px solid #e9d5ff',
+    text: '#1c1917',
+    mutedText: '#78716c',
+    divider: 'rgba(225, 29, 72, 0.2)',
+    badgeBg: '#e0e7ff',
+    badgeBorder: '#a5b4fc',
+    gridBgEven: '#fafaf9',
+    gridBgOdd: '#f5f5f4',
+    gridBorder: '#d4d4d4',
+  },
+  solemn: {
+    name: 'Solemne / Sagrado',
+    primary: '#dfb15b',
+    primaryDark: '#b88a3e',
+    primaryText: '#78561d',
+    bgLight: '#faf9f6',
+    accent: '#292524',
+    accentBg: '#f5f5f4',
+    accentBorder: '#e7e5e4',
+    accentText: '#44403c',
+    border: '4px solid #b88a3e',
+    cardBorder: '1px solid #d6d3d1',
+    text: '#0d0b0a',
+    mutedText: '#57534e',
+    divider: 'rgba(184, 138, 62, 0.3)',
+    badgeBg: '#f5f5f4',
+    badgeBorder: '#d6d3d1',
+    gridBgEven: '#ffffff',
+    gridBgOdd: '#faf9f6',
+    gridBorder: '#e7e5e4',
+  },
+  nature: {
+    name: 'Naturaleza / Calmado',
+    primary: '#059669',
+    primaryDark: '#047857',
+    primaryText: '#065f46',
+    bgLight: '#f0fdf4',
+    accent: '#d97706',
+    accentBg: '#fffbeb',
+    accentBorder: '#fde68a',
+    accentText: '#92400e',
+    border: '4px solid #047857',
+    cardBorder: '1px solid #bbf7d0',
+    text: '#1c1917',
+    mutedText: '#52525b',
+    divider: 'rgba(4, 120, 87, 0.2)',
+    badgeBg: '#fef3c7',
+    badgeBorder: '#fde68a',
+    gridBgEven: '#f8fafc',
+    gridBgOdd: '#f1f5f9',
+    gridBorder: '#cbd5e1',
+  },
+  minimal: {
+    name: 'Ahorro de Tinta / Minimalista',
+    primary: '#000000',
+    primaryDark: '#000000',
+    primaryText: '#000000',
+    bgLight: '#ffffff',
+    accent: '#000000',
+    accentBg: '#ffffff',
+    accentBorder: '#000000',
+    accentText: '#000000',
+    border: '2px solid #000000',
+    cardBorder: '1px solid #000000',
+    text: '#000000',
+    mutedText: '#555555',
+    divider: '#000000',
+    badgeBg: '#ffffff',
+    badgeBorder: '#000000',
+    gridBgEven: '#ffffff',
+    gridBgOdd: '#ffffff',
+    gridBorder: '#000000',
+  }
+};
+
+const FONT_SIZES = {
+  compact: {
+    base: '10px',
+    h3: '11.5px',
+    h2: '13px',
+    title: '20px',
+    lineHeight: '1.4',
+    badge: '8px',
+    inputDesc: '9px',
+    gridCell: '22px',
+    gridText: '11px',
+    subHeader: '11px',
+  },
+  standard: {
+    base: '11.5px',
+    h3: '13px',
+    h2: '15px',
+    title: '24px',
+    lineHeight: '1.5',
+    badge: '9px',
+    inputDesc: '10px',
+    gridCell: '28px',
+    gridText: '13px',
+    subHeader: '13px',
+  },
+  large: {
+    base: '13px',
+    h3: '15px',
+    h2: '17px',
+    title: '28px',
+    lineHeight: '1.6',
+    badge: '10.5px',
+    inputDesc: '11px',
+    gridCell: '32px',
+    gridText: '15px',
+    subHeader: '15px',
+  }
+};
+
+const MARGINS = {
+  standard: '0.4in',
+  compact: '0.25in',
+  wide: '0.6in'
+};
+
 export default function SundaySchoolGenerator({ formatContent: _formatContent }: SundaySchoolGeneratorProps) {
   const [ageGroup, setAgeGroup] = useState('Primarios (7-9 años)');
   const [resourceType, setResourceType] = useState('Lección Completa / Guía del Maestro');
@@ -210,6 +342,11 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
   const [streamProgress, setStreamProgress] = useState(0);
   const [alumnoImagenBase64, setAlumnoImagenBase64] = useState('');
   const [imageStage, setImageStage] = useState(0);
+
+  const [colorTheme, setColorTheme] = useState<'vibrant' | 'solemn' | 'nature' | 'minimal'>('vibrant');
+  const [fontSize, setFontSize] = useState<'compact' | 'standard' | 'large'>('standard');
+  const [printMargin, setPrintMargin] = useState<'standard' | 'compact' | 'wide'>('standard');
+  const [customHeader, setCustomHeader] = useState('');
 
   const folletoRef = useRef<HTMLDivElement>(null);
 
@@ -374,7 +511,25 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
       // Force exact A4 page width (794px at 96 DPI matches 8.27in width of A4 page)
       // This guarantees html2canvas renders it at full A4 scale even if stylesheets are removed
       const originalWidth = element.style.width;
+      const originalGap = element.style.gap;
+      
       element.style.width = '794px';
+      element.style.gap = '0px';
+
+      // Temporarily strip card aesthetics from pages for printing
+      const pages = element.querySelectorAll('.folleto-page');
+      const originalPageStyles = Array.from(pages).map((page: any) => ({
+        page,
+        border: page.style.border,
+        borderRadius: page.style.borderRadius,
+        boxShadow: page.style.boxShadow
+      }));
+
+      pages.forEach((page: any) => {
+        page.style.border = 'none';
+        page.style.borderRadius = '0px';
+        page.style.boxShadow = 'none';
+      });
 
       const opt = {
         margin: 0, // Using 0 margin so our internal page padding handles margins
@@ -392,8 +547,14 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
 
       await html2pdfFn().from(element).set(opt).save();
       
-      // Restore width
+      // Restore styles
       element.style.width = originalWidth;
+      element.style.gap = originalGap;
+      originalPageStyles.forEach(({ page, border, borderRadius, boxShadow }) => {
+        page.style.border = border;
+        page.style.borderRadius = borderRadius;
+        page.style.boxShadow = boxShadow;
+      });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Error desconocido';
       console.error("Error al exportar PDF:", message);
@@ -488,6 +649,30 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
     }
 
     return data;
+  };
+
+  const lesson = parseResource(generatedResource);
+  const themeStyles = COLOR_THEMES[colorTheme];
+  const fontStyles = FONT_SIZES[fontSize];
+  const activeMargin = MARGINS[printMargin];
+
+  const pageStyle: React.CSSProperties = {
+    width: '100%',
+    height: '296mm',
+    minHeight: '296mm',
+    maxHeight: '296mm',
+    boxSizing: 'border-box',
+    padding: activeMargin,
+    backgroundColor: '#ffffff',
+    color: themeStyles.text,
+    border: themeStyles.cardBorder,
+    borderRadius: '16px',
+    boxShadow: colorTheme === 'minimal' ? 'none' : '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    position: 'relative',
+    overflow: 'hidden'
   };
 
   const formatPdfInline = (text: string) => {
@@ -952,29 +1137,28 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
   // ============================================================
   const renderAlumnoSection = (): React.ReactNode => {
     return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '24px',
-        borderTop: '4px solid #1c1917',
-        paddingTop: '24px',
-        marginTop: '24px',
-        pageBreakBefore: 'always',
-        breakBefore: 'page'
-      }}>
+      <div 
+        className="folleto-page"
+        style={{
+          ...pageStyle,
+          pageBreakBefore: 'always',
+          breakBefore: 'page'
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {/* Header */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '16px',
-          backgroundColor: '#faf5ff',
-          border: '4px solid #9333ea',
+          backgroundColor: themeStyles.bgLight,
+          border: themeStyles.border,
           padding: '16px',
           borderRadius: '24px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+          boxShadow: colorTheme === 'minimal' ? 'none' : '0 2px 4px rgba(0,0,0,0.05)'
         }}>
           <div style={{
-            backgroundColor: '#9333ea',
+            backgroundColor: themeStyles.primary,
             color: '#ffffff',
             fontWeight: 900,
             fontSize: '11px',
@@ -982,15 +1166,15 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
             textTransform: 'uppercase',
             padding: '10px 24px',
             borderRadius: '16px',
-            border: '2px solid #ffffff',
+            border: colorTheme === 'minimal' ? '2px solid #000000' : '2px solid #ffffff',
             transform: 'rotate(-1deg)',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            boxShadow: colorTheme === 'minimal' ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
           }}>
             📝 MATERIAL DE TRABAJO
           </div>
           <div style={{ flex: 1 }}>
-            <h4 style={{ margin: 0, fontWeight: 900, color: '#6b21a8', fontSize: '16px' }}>Alumno</h4>
-            <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: '#78716c', fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic' }}>
+            <h4 style={{ margin: 0, fontWeight: 900, color: themeStyles.primaryText, fontSize: fontStyles.h2 }}>Alumno</h4>
+            <p style={{ margin: '4px 0 0 0', fontSize: fontStyles.base, color: themeStyles.mutedText, fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic' }}>
               Actividad grupal para reforzar la lección de hoy.
             </p>
           </div>
@@ -999,8 +1183,8 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
           {/* Left column: Game Activity */}
           <div style={{
-            border: '1px solid #e9d5ff',
-            backgroundColor: 'rgba(250, 245, 255, 0.2)',
+            border: themeStyles.cardBorder,
+            backgroundColor: themeStyles.bgLight,
             padding: '24px',
             borderRadius: '24px',
             display: 'flex',
@@ -1009,7 +1193,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
             pageBreakInside: 'avoid',
             breakInside: 'avoid'
           }}>
-            <span style={{ fontSize: '10px', fontWeight: 900, color: '#6b21a8', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+            <span style={{ fontSize: '10px', fontWeight: 900, color: themeStyles.accentText, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
               🎲 Juego: {(() => {
                 const tipos: Record<string, string> = {
                   'SOPA_DE_LETRAS': 'Sopa de Letras',
@@ -1030,35 +1214,36 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
 
           {/* Right column: Instructions + Image */}
           <div style={{
-            border: '1px solid #e7e5e4',
+            border: themeStyles.cardBorder,
             padding: '24px',
             borderRadius: '24px',
             display: 'flex',
             flexDirection: 'column',
             gap: '16px',
             pageBreakInside: 'avoid',
-            breakInside: 'avoid'
+            breakInside: 'avoid',
+            backgroundColor: themeStyles.bgLight
           }}>
             {/* Instructions */}
             <div>
-              <span style={{ fontSize: '10px', fontWeight: 900, color: '#44403c', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 900, color: themeStyles.accentText, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                 📋 Instrucciones
               </span>
               {lesson.alumnoInstrucciones ? (
                 <div style={{
-                  fontSize: '11px',
+                  fontSize: fontStyles.base,
                   fontFamily: '"Lora", Georgia, serif',
-                  color: '#1c1917',
+                  color: themeStyles.text,
                   lineHeight: 1.6,
                   padding: '12px',
-                  backgroundColor: '#fafaf9',
+                  backgroundColor: themeStyles.bgLight,
                   borderRadius: '12px',
-                  border: '1px solid #e7e5e4'
+                  border: themeStyles.cardBorder
                 }}>
                   {formatPdfContent(lesson.alumnoInstrucciones)}
                 </div>
               ) : (
-                <p style={{ fontSize: '10px', fontFamily: '"Lora", Georgia, serif', color: '#78716c', fontStyle: 'italic' }}>
+                <p style={{ fontSize: fontStyles.base, fontFamily: '"Lora", Georgia, serif', color: themeStyles.mutedText, fontStyle: 'italic' }}>
                   Sigue las indicaciones de tu maestro para completar la actividad.
                 </p>
               )}
@@ -1066,13 +1251,13 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
 
             {/* Generated Image */}
             <div>
-              <span style={{ fontSize: '10px', fontWeight: 900, color: '#44403c', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 900, color: themeStyles.accentText, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                 🖼️ Ilustración de la clase
               </span>
               <div style={{
-                border: '2px dashed #d6d3d1',
+                border: '2px dashed ' + themeStyles.mutedText,
                 borderRadius: '16px',
-                backgroundColor: '#fafaf9',
+                backgroundColor: themeStyles.bgLight,
                 minHeight: '160px',
                 display: 'flex',
                 alignItems: 'center',
@@ -1112,17 +1297,17 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                     />
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px', textAlign: 'center' }}>
-                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9333ea" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
+                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke={themeStyles.primary} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8 }}>
                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
                         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
                         <path d="M6 6h10" />
                         <path d="M6 10h10" />
                         <path d="M6 14h10" />
                       </svg>
-                      <span style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6b21a8' }}>
+                      <span style={{ fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: themeStyles.primaryText }}>
                         Estudio Bíblico
                       </span>
-                      <span style={{ fontSize: '8px', fontFamily: '"Lora", Georgia, serif', color: '#78716c', fontStyle: 'italic' }}>
+                      <span style={{ fontSize: '8px', fontFamily: '"Lora", Georgia, serif', color: themeStyles.mutedText, fontStyle: 'italic' }}>
                         Dibujo para colorear y recortar
                       </span>
                     </div>
@@ -1130,10 +1315,10 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', padding: '16px', textAlign: 'center' }}>
                     <span style={{ fontSize: '28px', opacity: 0.2 }}>🖼️</span>
-                    <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#a8a29e' }}>
+                    <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', color: themeStyles.mutedText }}>
                       Imagen de la Lección
                     </span>
-                    <span style={{ fontSize: '8px', fontFamily: '"Lora", Georgia, serif', color: '#d6d3d1', fontStyle: 'italic' }}>
+                    <span style={{ fontSize: '8px', fontFamily: '"Lora", Georgia, serif', color: themeStyles.mutedText, fontStyle: 'italic' }}>
                       Ilustración generada por IA
                     </span>
                   </div>
@@ -1142,6 +1327,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
             </div>
           </div>
         </div>
+        </div>
 
         {/* Bottom info bar */}
         <div style={{
@@ -1149,22 +1335,21 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderTop: '1px solid #e7e5e4',
+          borderTop: '1px solid ' + themeStyles.mutedText,
           paddingTop: '12px',
-          fontSize: '8px',
-          color: '#78716c',
-          fontFamily: 'monospace'
+          fontSize: fontStyles.badge,
+          color: themeStyles.mutedText,
+          fontFamily: 'monospace',
+          marginTop: 'auto'
         }}>
           <span>ELÍAS — Material del Alumno</span>
-          <span style={{ fontWeight: 'bold', textTransform: 'uppercase', color: '#57534e', fontSize: '8px', letterSpacing: '0.1em' }}>
+          <span style={{ fontWeight: 'bold', textTransform: 'uppercase', color: themeStyles.text, fontSize: '8px', letterSpacing: '0.1em' }}>
             Recorta y trabaja en grupo
           </span>
         </div>
       </div>
     );
   };
-
-  const lesson = parseResource(generatedResource);
 
   return (
     <div className="flex-1 w-full flex flex-col lg:flex-row overflow-hidden relative">
@@ -1226,6 +1411,64 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
               rows={4}
               className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all resize-none"
             />
+          </div>
+
+          <div className="border-t border-amber-500/10 pt-4 mt-2 space-y-4">
+            <h4 className="text-[11px] font-bold font-heading text-amber-400 uppercase tracking-widest mb-2">Opciones de Diseño</h4>
+
+            {/* Color Theme Selector */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Tema de Color</label>
+              <select
+                value={colorTheme}
+                onChange={(e) => setColorTheme(e.target.value as any)}
+                className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all cursor-pointer"
+              >
+                {Object.entries(COLOR_THEMES).map(([key, t]) => (
+                  <option key={key} value={key}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Font Size Selector */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Tamaño de Letra</label>
+              <select
+                value={fontSize}
+                onChange={(e) => setFontSize(e.target.value as any)}
+                className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all cursor-pointer"
+              >
+                <option value="compact">Compacto (Pequeño)</option>
+                <option value="standard">Estándar (Mediano)</option>
+                <option value="large">Grande (Legible)</option>
+              </select>
+            </div>
+
+            {/* Print Margins Selector */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Márgenes de Impresión</label>
+              <select
+                value={printMargin}
+                onChange={(e) => setPrintMargin(e.target.value as any)}
+                className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all cursor-pointer"
+              >
+                <option value="standard">Estándar (0.4in)</option>
+                <option value="compact">Económico (0.25in)</option>
+                <option value="wide">Ancho (0.6in)</option>
+              </select>
+            </div>
+
+            {/* Custom Header Text */}
+            <div className="space-y-2 pb-2">
+              <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Encabezado Personalizado</label>
+              <input
+                type="text"
+                value={customHeader}
+                onChange={(e) => setCustomHeader(e.target.value)}
+                placeholder="Ej: Iglesia Bautista de la Gracia"
+                className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all"
+              />
+            </div>
           </div>
 
           <button
@@ -1305,17 +1548,12 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                   width: '100%',
                   maxWidth: '794px', // Matches A4 width at 96 DPI
                   boxSizing: 'border-box',
-                  minHeight: '11in', 
                   fontFamily: '"Plus Jakarta Sans", sans-serif',
-                  backgroundColor: '#ffffff', 
-                  color: '#1c1917', 
-                  padding: '0.4in', 
-                  borderRadius: '24px', 
-                  border: '1px solid #d6d3d1', 
                   display: 'flex', 
                   flexDirection: 'column', 
-                  gap: '24px',
-                  boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                  gap: '32px',
+                  fontSize: fontStyles.base,
+                  lineHeight: fontStyles.lineHeight
                 }}
               >
                 
@@ -1323,14 +1561,10 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                     PAGINA 1: CABECERA Y HISTORIA DE LA LECCION
                     ======================================================== */}
                 <div 
-                  style={{ 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    gap: '24px', 
-                    borderBottom: '4px solid #1c1917', 
-                    paddingBottom: '24px' 
-                  }}
+                  className="folleto-page"
+                  style={pageStyle}
                 >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   
                   {/* Header de Marquesina estilo Neón / Comic del PDF */}
                   <div 
@@ -1338,27 +1572,27 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       display: 'flex', 
                       flexDirection: 'row', 
                       alignItems: 'center', 
-                      border: '4px solid #e11d48', 
-                      backgroundColor: '#fff5f5', 
+                      border: themeStyles.border, 
+                      backgroundColor: themeStyles.bgLight, 
                       padding: '16px', 
                       borderRadius: '24px', 
                       gap: '16px', 
                       position: 'relative', 
                       overflow: 'hidden',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      boxShadow: colorTheme === 'minimal' ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }}
                   >
                     {/* Stars Pattern Overlay */}
-                    <div style={{ position: 'absolute', top: '0', right: '0', padding: '8px', opacity: 0.05, color: '#9f1239', fontSize: '60px', userSelect: 'none' }}>★</div>
-
-                    {/* Escena badge */}
+                    <div style={{ position: 'absolute', top: '0', right: '0', padding: '8px', opacity: colorTheme === 'minimal' ? 0 : 0.05, color: themeStyles.primaryDark, fontSize: '60px', userSelect: 'none' }}>★</div>
+ 
+                     {/* Escena badge */}
                     <div 
                       style={{ 
-                        backgroundColor: '#e11d48', 
+                        backgroundColor: themeStyles.primary, 
                         color: '#ffffff', 
                         padding: '12px', 
                         borderRadius: '16px', 
-                        border: '2px solid #ffffff', 
+                        border: colorTheme === 'minimal' ? '2px solid #000000' : '2px solid #ffffff', 
                         display: 'flex', 
                         flexDirection: 'column', 
                         alignItems: 'center', 
@@ -1370,23 +1604,23 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       <span style={{ fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 900 }}>Escena</span>
                       <span style={{ fontSize: '30px', fontWeight: 900, lineHeight: 1 }}>{lesson.numeroEscena}</span>
                     </div>
-
-                    {/* Titulo marquesina central */}
+ 
+                     {/* Titulo marquesina central */}
                     <div style={{ flex: 1 }}>
-                      <h2 style={{ fontSize: '24px', fontFamily: '"Cinzel", Georgia, serif', fontWeight: 900, color: '#9f1239', textTransform: 'uppercase', margin: 0 }}>
+                      <h2 style={{ fontSize: fontStyles.title, fontFamily: '"Cinzel", Georgia, serif', fontWeight: 900, color: themeStyles.primaryText, textTransform: 'uppercase', margin: 0 }}>
                         {lesson.titulo}
                       </h2>
-                      <div style={{ height: '2px', backgroundColor: 'rgba(225, 29, 72, 0.2)', margin: '4px 0' }} />
-                      <span style={{ fontSize: '11px', fontFamily: '"Lora", Georgia, serif', fontWeight: 'bold', color: '#44403c', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        Tema Central Doctrinario
+                      <div style={{ height: '2px', backgroundColor: themeStyles.divider, margin: '4px 0' }} />
+                      <span style={{ fontSize: fontStyles.subHeader, fontFamily: '"Lora", Georgia, serif', fontWeight: 'bold', color: themeStyles.mutedText, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {customHeader ? customHeader : 'Tema Central Doctrinario'}
                       </span>
                     </div>
-
-                    {/* Pasaje y Referencias */}
+ 
+                     {/* Pasaje y Referencias */}
                     <div 
                       style={{ 
-                        backgroundColor: '#ffffff', 
-                        border: '2px solid rgba(225, 29, 72, 0.4)', 
+                        backgroundColor: themeStyles.bgLight, 
+                        border: colorTheme === 'minimal' ? '1px solid #000000' : `2px solid ${themeStyles.primary}40`, 
                         padding: '12px', 
                         borderRadius: '16px', 
                         textAlign: 'center', 
@@ -1394,23 +1628,23 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                         transform: 'rotate(1deg)'
                       }}
                     >
-                      <span style={{ fontSize: '9px', fontWeight: 900, color: '#e11d48', textTransform: 'uppercase', display: 'block' }}>Lectura</span>
-                      <span style={{ fontSize: '12px', fontFamily: '"Cinzel", Georgia, serif', fontWeight: 900, color: '#1c1917', display: 'block', marginTop: '4px' }}>{lesson.pasaje}</span>
-                      <span style={{ fontSize: '9px', color: '#78716c', fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic', display: 'block', marginTop: '2px' }}>RVR1960</span>
+                      <span style={{ fontSize: '9px', fontWeight: 900, color: themeStyles.primaryText, textTransform: 'uppercase', display: 'block' }}>Lectura</span>
+                      <span style={{ fontSize: fontStyles.subHeader, fontFamily: '"Cinzel", Georgia, serif', fontWeight: 900, color: themeStyles.text, display: 'block', marginTop: '4px' }}>{lesson.pasaje}</span>
+                      <span style={{ fontSize: '9px', color: themeStyles.mutedText, fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic', display: 'block', marginTop: '2px' }}>RVR1960</span>
                     </div>
                   </div>
-
-                  {/* Dos Columnas: Lección + Versículo en Marco Estilo PDF */}
+ 
+                   {/* Dos Columnas: Lección + Versículo en Marco Estilo PDF */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, minmax(0, 1fr))', gap: '24px', marginTop: '16px' }}>
                     
                     {/* Columna Izquierda: Lección */}
-                    <div style={{ gridColumn: 'span 7 / span 7', display: 'flex', flexDirection: 'column', gap: '16px', borderRight: '1px solid #e7e5e4', paddingRight: '24px' }}>
+                    <div style={{ gridColumn: 'span 7 / span 7', display: 'flex', flexDirection: 'column', gap: '16px', borderRight: colorTheme === 'minimal' ? '1px solid #000000' : '1px solid #e7e5e4', paddingRight: '24px' }}>
                       
                       {/* LECCION BANNER */}
                       <div 
                         style={{ 
                           display: 'inline-block', 
-                          background: 'linear-gradient(to right, #2563eb, #4f46e5)', 
+                          background: colorTheme === 'minimal' ? '#000000' : `linear-gradient(to right, ${themeStyles.primary}, ${themeStyles.primaryDark})`, 
                           color: '#ffffff', 
                           fontWeight: 900, 
                           fontSize: '11px', 
@@ -1420,30 +1654,30 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                           borderRadius: '16px', 
                           alignSelf: 'start', 
                           transform: 'rotate(-1deg)',
-                          border: '1px solid #3b82f6',
-                          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                          border: colorTheme === 'minimal' ? '1px solid #000000' : '1px solid ' + themeStyles.primary,
+                          boxShadow: colorTheme === 'minimal' ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
                         }}
                       >
                         🎬 LECCIÓN
                       </div>
-
-                      <div style={{ fontFamily: '"Lora", Georgia, serif', fontSize: '12px', lineHeight: 1.6, color: '#1c1917', textAlign: 'justify' }}>
+ 
+                       <div style={{ fontFamily: '"Lora", Georgia, serif', fontSize: fontStyles.base, lineHeight: fontStyles.lineHeight, color: themeStyles.text, textAlign: 'justify' }}>
                         {formatPdfContent(lesson.leccion)}
                       </div>
                     </div>
-
-                    {/* Columna Derecha: Versículo e Ilustraciones */}
+ 
+                     {/* Columna Derecha: Versículo e Ilustraciones */}
                     <div style={{ gridColumn: 'span 5 / span 5', display: 'flex', flexDirection: 'column', gap: '24px' }}>
                       
                       {/* VERSICULO BOX - Estilo PDF con Doble Borde */}
                       <div 
                         style={{ 
-                          border: '4px double #f59e0b', 
-                          backgroundColor: '#fffbeb', 
+                          border: colorTheme === 'minimal' ? '1px solid #000000' : '4px double ' + themeStyles.primary, 
+                          backgroundColor: themeStyles.bgLight, 
                           padding: '20px', 
                           borderRadius: '24px', 
                           position: 'relative',
-                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
+                          boxShadow: colorTheme === 'minimal' ? 'none' : '0 4px 6px -1px rgba(0, 0, 0, 0.05)',
                           pageBreakInside: 'avoid',
                           breakInside: 'avoid'
                         }}
@@ -1456,10 +1690,10 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                             right: '-16px', 
                             width: '36px', 
                             height: '36px', 
-                            backgroundColor: '#f59e0b', 
+                            backgroundColor: themeStyles.primary, 
                             color: '#ffffff', 
                             borderRadius: '50%', 
-                            display: 'flex', 
+                            display: colorTheme === 'minimal' ? 'none' : 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center', 
                             fontWeight: 'bold', 
@@ -1472,27 +1706,27 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                           ★
                         </div>
                         
-                        <span style={{ fontSize: '9px', fontWeight: 900, color: '#b45309', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '9px', fontWeight: 900, color: themeStyles.primaryText, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
                           Versículo Clave
                         </span>
                         
-                        <blockquote style={{ fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic', fontSize: '13px', color: '#1c1917', fontWeight: 500, lineHeight: 1.5, margin: '0 0 12px 0' }}>
+                        <blockquote style={{ fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic', fontSize: fontStyles.h3, color: themeStyles.text, fontWeight: 500, lineHeight: 1.5, margin: '0 0 12px 0' }}>
                           {lesson.versiculoTexto}
                         </blockquote>
-
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '10px', fontWeight: 'bold', color: '#92400e', borderBottom: '1px solid #f59e0b', paddingBottom: '2px' }}>
+ 
+                         <div style={{ textAlign: 'right' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 'bold', color: themeStyles.primaryText, borderBottom: '1px solid ' + themeStyles.primary, paddingBottom: '2px' }}>
                             {lesson.versiculoRef}
                           </span>
                         </div>
                       </div>
-
-                      {/* Batallas / Dinámicas Banner */}
+ 
+                       {/* Batallas / Dinámicas Banner */}
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                         <div 
                           style={{ 
                             display: 'inline-block', 
-                            background: 'linear-gradient(to right, #dc2626, #ea580c)', 
+                            background: colorTheme === 'minimal' ? '#000000' : `linear-gradient(to right, ${themeStyles.accent}, ${themeStyles.accentText})`, 
                             color: '#ffffff', 
                             fontWeight: 900, 
                             fontSize: '11px', 
@@ -1502,34 +1736,62 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                             borderRadius: '16px', 
                             alignSelf: 'start', 
                             transform: 'rotate(1deg)',
-                            border: '1px solid #ef4444',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            border: colorTheme === 'minimal' ? '1px solid #000000' : '1px solid ' + themeStyles.accent,
+                            boxShadow: colorTheme === 'minimal' ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
                           }}
                         >
                           🥊 {lesson.juegoTitulo.toUpperCase()}
                         </div>
-                        <p style={{ fontFamily: '"Lora", Georgia, serif', fontSize: '11px', lineHeight: 1.5, color: '#44403c', textAlign: 'justify', margin: 0 }}>
+                        <p style={{ fontFamily: '"Lora", Georgia, serif', fontSize: fontStyles.base, lineHeight: 1.5, color: themeStyles.mutedText, textAlign: 'justify', margin: 0 }}>
                           {lesson.juegoTexto}
                         </p>
                       </div>
-
-                      {/* Attendance box style bottom P1 */}
-                      <div style={{ backgroundColor: '#fafaf9', border: '1px solid #e7e5e4', padding: '16px', borderRadius: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
-                        <span style={{ fontSize: '9px', fontWeight: 900, color: '#78716c', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+ 
+                       {/* Attendance box style bottom P1 */}
+                      <div style={{ backgroundColor: themeStyles.bgLight, border: themeStyles.cardBorder, padding: '16px', borderRadius: '16px', pageBreakInside: 'avoid', breakInside: 'avoid', color: themeStyles.mutedText }}>
+                        <span style={{ fontSize: '9px', fontWeight: 900, color: themeStyles.mutedText, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
                           !ASISTENCIA!
                         </span>
-                        <p style={{ fontSize: '10px', fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic', color: '#44403c', margin: 0, lineHeight: 1.4 }}>
+                        <p style={{ fontSize: fontStyles.base, fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic', color: themeStyles.text, margin: 0, lineHeight: 1.4 }}>
                           {lesson.asistencia}
                         </p>
                       </div>
                     </div>
+                  </div>
+                  </div>
+
+                  {/* Page 1 Footer */}
+                  <div 
+                    style={{ 
+                      display: 'flex', 
+                      flexDirection: 'row',
+                      alignItems: 'center', 
+                      justifyContent: 'space-between', 
+                      borderTop: '1px solid ' + themeStyles.mutedText, 
+                      paddingTop: '12px', 
+                      fontSize: fontStyles.badge, 
+                      color: themeStyles.mutedText, 
+                      fontFamily: 'monospace',
+                      marginTop: 'auto'
+                    }}
+                  >
+                    <span>ELÍAS — Lección Dominical Escena {lesson.numeroEscena}</span>
+                    <span style={{ fontWeight: 'bold', textTransform: 'uppercase', color: themeStyles.text, fontSize: fontStyles.badge, letterSpacing: '0.1em' }}>Soli Deo Gloria</span>
                   </div>
                 </div>
 
                 {/* ========================================================
                     PAGINA 2: ACTIVIDADES / MANUALIDAD
                     ======================================================== */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', paddingTop: '16px', pageBreakBefore: 'always', breakBefore: 'page' }}>
+                <div 
+                  className="folleto-page"
+                  style={{
+                    ...pageStyle,
+                    pageBreakBefore: 'always',
+                    breakBefore: 'page'
+                  }}
+                >
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   
                   {/* TENGO TALENTO HEADER */}
                   <div 
@@ -1538,16 +1800,16 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       flexDirection: 'row', 
                       alignItems: 'center', 
                       gap: '16px', 
-                      backgroundColor: '#faf5ff', 
-                      border: '4px solid #9333ea', 
+                      backgroundColor: themeStyles.bgLight, 
+                      border: themeStyles.border, 
                       padding: '16px', 
                       borderRadius: '24px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+                      boxShadow: colorTheme === 'minimal' ? 'none' : '0 2px 4px rgba(0,0,0,0.05)'
                     }}
                   >
                     <div 
                       style={{ 
-                        backgroundColor: '#9333ea', 
+                        backgroundColor: themeStyles.primary, 
                         color: '#ffffff', 
                         fontWeight: 900, 
                         fontSize: '11px', 
@@ -1555,46 +1817,46 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                         textTransform: 'uppercase', 
                         padding: '10px 24px', 
                         borderRadius: '16px', 
-                        border: '2px solid #ffffff', 
+                        border: colorTheme === 'minimal' ? '2px solid #000000' : '2px solid #ffffff', 
                         transform: 'rotate(-1deg)',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        boxShadow: colorTheme === 'minimal' ? 'none' : '0 2px 4px rgba(0,0,0,0.1)'
                       }}
                     >
                       🎨 TENGO TALENTO
                     </div>
                     <div style={{ flex: 1 }}>
-                      <h4 style={{ margin: 0, fontWeight: 900, color: '#6b21a8', fontSize: '16px' }}>Manualidades y Actividades Didácticas</h4>
-                      <p style={{ margin: '4px 0 0 0', fontSize: '10px', color: '#78716c', fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic' }}>Diseñado para la aplicación táctil de las verdades bíblicas bautistas.</p>
+                      <h4 style={{ margin: 0, fontWeight: 900, color: themeStyles.primaryText, fontSize: fontStyles.h2 }}>Manualidades y Actividades Didácticas</h4>
+                      <p style={{ margin: '4px 0 0 0', fontSize: fontStyles.base, color: themeStyles.mutedText, fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic' }}>Diseñado para la aplicación táctil de las verdades bíblicas bautistas.</p>
                     </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '24px' }}>
                     {/* Materiales y Pasos */}
-                    <div style={{ border: '1px solid #e9d5ff', backgroundColor: 'rgba(250, 245, 255, 0.2)', padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    <div style={{ border: themeStyles.cardBorder, backgroundColor: themeStyles.bgLight, padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', gap: '16px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                       <div>
-                        <span style={{ fontSize: '10px', fontWeight: 900, color: '#6b21a8', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Materiales Necesarios</span>
-                        <div style={{ fontSize: '11px', fontFamily: '"Lora", Georgia, serif', color: '#1c1917', lineHeight: 1.5, paddingLeft: '16px', borderLeft: '1px solid #e9d5ff' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 900, color: themeStyles.accentText, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Materiales Necesarios</span>
+                        <div style={{ fontSize: fontStyles.base, fontFamily: '"Lora", Georgia, serif', color: themeStyles.text, lineHeight: 1.5, paddingLeft: '16px', borderLeft: '1px solid ' + themeStyles.divider }}>
                           {formatPdfContent(lesson.materiales)}
                         </div>
                       </div>
 
-                      <div style={{ height: '1px', backgroundColor: '#e9d5ff', margin: '4px 0' }} />
+                      <div style={{ height: '1px', backgroundColor: themeStyles.divider, margin: '4px 0' }} />
 
                       <div>
-                        <span style={{ fontSize: '10px', fontWeight: 900, color: '#6b21a8', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Instrucciones Paso a Paso</span>
-                        <div style={{ fontSize: '11px', fontFamily: '"Lora", Georgia, serif', color: '#1c1917', lineHeight: 1.5, paddingLeft: '16px', borderLeft: '1px solid #e9d5ff' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 900, color: themeStyles.accentText, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Instrucciones Paso a Paso</span>
+                        <div style={{ fontSize: fontStyles.base, fontFamily: '"Lora", Georgia, serif', color: themeStyles.text, lineHeight: 1.5, paddingLeft: '16px', borderLeft: '1px solid ' + themeStyles.divider }}>
                           {formatPdfContent(lesson.instrucciones)}
                         </div>
                       </div>
                     </div>
 
                     {/* Dibujo e Ilustración */}
-                    <div style={{ border: '1px solid #e7e5e4', padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '260px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+                    <div style={{ border: themeStyles.cardBorder, backgroundColor: themeStyles.bgLight, padding: '24px', borderRadius: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '260px', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
                       <div>
-                        <span style={{ fontSize: '10px', fontWeight: 900, color: '#44403c', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
+                        <span style={{ fontSize: '10px', fontWeight: 900, color: themeStyles.accentText, textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>
                           Dibujo Ilustrativo de la Clase
                         </span>
-                        <p style={{ fontSize: '10px', fontFamily: '"Lora", Georgia, serif', color: '#78716c', fontStyle: 'italic', margin: '0 0 16px 0' }}>
+                        <p style={{ fontSize: fontStyles.base, fontFamily: '"Lora", Georgia, serif', color: themeStyles.mutedText, fontStyle: 'italic', margin: '0 0 16px 0' }}>
                           Dibuja algo relacionado al tema: "{lesson.titulo}"
                         </p>
                       </div>
@@ -1602,9 +1864,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       <div 
                         style={{ 
                           flex: 1, 
-                          border: '2px dashed #d6d3d1', 
+                          border: '2px dashed ' + themeStyles.mutedText, 
                           borderRadius: '16px', 
-                          backgroundColor: '#fafaf9', 
+                          backgroundColor: themeStyles.bgLight, 
                           display: 'flex', 
                           flexDirection: 'column',
                           alignItems: 'center', 
@@ -1615,7 +1877,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       >
                         <div style={{ opacity: 0.2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                           <span style={{ fontSize: '32px' }}>🖍️</span>
-                          <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '8px' }}>Dibuja o colorea aquí</span>
+                          <span style={{ fontSize: '9px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: '8px', color: themeStyles.text }}>Dibuja o colorea aquí</span>
                         </div>
                       </div>
                     </div>
@@ -1624,13 +1886,13 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                   {/* Devocional / Desafío Semanal */}
                   <div 
                     style={{ 
-                      backgroundColor: '#ecfdf5', 
-                      border: '4px solid #059669', 
+                      backgroundColor: themeStyles.bgLight, 
+                      border: themeStyles.border, 
                       padding: '24px', 
                       borderRadius: '24px', 
                       position: 'relative',
                       marginTop: '16px',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+                      boxShadow: colorTheme === 'minimal' ? 'none' : '0 2px 4px rgba(0,0,0,0.05)',
                       pageBreakInside: 'avoid',
                       breakInside: 'avoid'
                     }}
@@ -1640,23 +1902,24 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                         position: 'absolute', 
                         top: '-12px', 
                         left: '24px', 
-                        backgroundColor: '#059669', 
+                        backgroundColor: themeStyles.primary, 
                         color: '#ffffff', 
                         fontWeight: 900, 
-                        fontSize: '9px', 
+                        fontSize: fontStyles.badge, 
                         letterSpacing: '0.1em', 
                         textTransform: 'uppercase', 
                         padding: '4px 16px', 
                         borderRadius: '9999px', 
-                        border: '1px solid #ffffff' 
+                        border: colorTheme === 'minimal' ? '1px solid #000000' : '1px solid #ffffff' 
                       }}
                     >
                       🏆 DESAFÍO: {lesson.desafioTitulo.toUpperCase()}
                     </span>
                     
-                    <div style={{ fontFamily: '"Lora", Georgia, serif', fontSize: '11px', lineHeight: 1.6, color: '#1c1917', marginTop: '8px', textAlign: 'justify' }}>
+                    <div style={{ fontFamily: '"Lora", Georgia, serif', fontSize: fontStyles.base, lineHeight: 1.6, color: themeStyles.text, marginTop: '8px', textAlign: 'justify' }}>
                       {formatPdfContent(lesson.desafioTexto)}
                     </div>
+                  </div>
                   </div>
 
                   {/* Footer footer logo */}
@@ -1666,16 +1929,16 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       flexDirection: 'row',
                       alignItems: 'center', 
                       justifyContent: 'space-between', 
-                      borderTop: '1px solid #e7e5e4', 
+                      borderTop: '1px solid ' + themeStyles.mutedText, 
                       paddingTop: '16px', 
-                      marginTop: '24px', 
-                      fontSize: '9px', 
-                      color: '#78716c', 
+                      marginTop: 'auto', 
+                      fontSize: fontStyles.badge, 
+                      color: themeStyles.mutedText, 
                       fontFamily: 'monospace' 
                     }}
                   >
                     <span>ELÍAS — Módulo de Recursos de Escuela Dominical</span>
-                    <span style={{ fontWeight: 'bold', textTransform: 'uppercase', color: '#57534e', fontSize: '9px', letterSpacing: '0.1em' }}>Soli Deo Gloria</span>
+                    <span style={{ fontWeight: 'bold', textTransform: 'uppercase', color: themeStyles.text, fontSize: fontStyles.badge, letterSpacing: '0.1em' }}>Soli Deo Gloria</span>
                   </div>
                 </div>
 

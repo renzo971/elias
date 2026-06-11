@@ -30,4 +30,6 @@ pnpm-debug.log*
 .opencode/skills/
 .gemini/
 .agent/
+specboot/
+openspec/
 

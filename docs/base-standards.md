@@ -24,7 +24,7 @@ alwaysApply: true
 - **Idioma del Proyecto**: 
   - La interfaz de usuario, lecciones generadas y respuestas del chat son en **español**.
   - El código fuente (variables, comentarios, logs, nombres de bases de datos o tipos) e commits deben escribirse en **inglés**.
-  - Los archivos de documentación en `docs/` se escriben en **español** para facilitar la gestión por parte del equipo.
+  - Los archivos de documentación en `docs/` y los artefactos de cambios/diseño en `openspec/changes/` se escriben en **español** para facilitar la gestión por parte del equipo.
 
 ---
 
