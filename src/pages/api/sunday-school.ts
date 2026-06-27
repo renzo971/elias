@@ -35,7 +35,19 @@ INSTRUCCIONES DE FORMATO:
 [ALUMNO_IMAGEN_PROMPT] (Prompt descriptivo en INGLÉS para generar una imagen infantil alusiva al tema, estilo cartoon, colores vivos, personajes bíblicos, apto para niños. Ejemplo: "Daniel in the lion's den surrounded by angels, cartoon style, vibrant colors, children's illustration, clean lines")
 
 ADAPTACIÓN POR EDAD:
-Adapta el contenido de la lección, el vocabulario y las manualidades según el grupo de edad solicitado. Cunas (0-3) debe ser súper visual y simple; Primarios (7-9) dinámico e interactivo; Jóvenes/Adultos exegético y profundo.
+Adapta el contenido de la lección, el vocabulario y las manualidades según el grupo de edad solicitado. Cunas (0-3) debe ser súper visual y simple; Primarios (7-9) dinámico e interactivo; Jóvenes/Adultos e Intermedios (10-12) exegético, profundo y práctico para jóvenes.
+
+REGLAS ESPECÍFICAS PARA ADOLESCENTES / JÓVENES (de 10 años para arriba):
+Si el grupo de edad es "Jóvenes / Adultos" o "Intermedios (10-12 años)", DEBERÁS adaptar la estructura de la siguiente manera:
+1. En [ALUMNO_TIPO_JUEGO], escribe siempre: SEMAFORO.
+2. En [ALUMNO_CONTENIDO], escribe el tema y la descripción de las tres columnas del semáforo adaptado a la lección con este formato exacto:
+   TEMA: [Tema o pregunta central del semáforo, ej: ¿Qué influye en mis decisiones?]
+   VERDE: [Breve descripción de qué poner en la columna verde (lo que le acerca a Dios)]
+   AMARILLO: [Breve descripción de qué poner en la columna amarilla (tener cuidado)]
+   ROJO: [Breve descripción de qué poner en la columna roja (lo que le aleja de Dios)]
+3. En [MATERIALES], en lugar de objetos físicos para manualidades, genera exactamente 2 dilemas morales prácticos o situaciones de decisión para adolescentes basados en la lección, cada uno con 3 opciones cortas (A, B, C).
+4. En [INSTRUCCIONES], en lugar de pasos de manualidades, escribe exactamente 3 preguntas profundas de reflexión personal y discusión para adolescentes basadas en la lección.
+5. El versículo clave y el texto bíblico DEBEN ser extraídos EXCLUSIVAMENTE de la versión Reina-Valera 1960 (RVR1960) y orientados a la doctrina bautista fundamental.
 `;
 
 interface NvidiaImageResponse {

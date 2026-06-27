@@ -281,6 +281,27 @@ const COLOR_THEMES = {
     gridBgEven: '#ffffff',
     gridBgOdd: '#ffffff',
     gridBorder: '#000000',
+  },
+  teens: {
+    name: 'Jóvenes / Adolescentes',
+    primary: '#1e3a8a',
+    primaryDark: '#172554',
+    primaryText: '#1e3a8a',
+    bgLight: '#f8fafc',
+    accent: '#dfb15b',
+    accentBg: '#fef08a',
+    accentBorder: '#ca8a04',
+    accentText: '#854d0e',
+    border: '4px solid #1e3a8a',
+    cardBorder: '1px solid #cbd5e1',
+    text: '#0f172a',
+    mutedText: '#475569',
+    divider: 'rgba(30, 58, 138, 0.2)',
+    badgeBg: '#e2e8f0',
+    badgeBorder: '#cbd5e1',
+    gridBgEven: '#ffffff',
+    gridBgOdd: '#f8fafc',
+    gridBorder: '#94a3b8',
   }
 };
 
@@ -343,7 +364,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
   const [alumnoImagenBase64, setAlumnoImagenBase64] = useState('');
   const [imageStage, setImageStage] = useState(0);
 
-  const [colorTheme, setColorTheme] = useState<'vibrant' | 'solemn' | 'nature' | 'minimal'>('vibrant');
+  const [colorTheme, setColorTheme] = useState<'vibrant' | 'solemn' | 'nature' | 'minimal' | 'teens'>('vibrant');
   const [fontSize, setFontSize] = useState<'compact' | 'standard' | 'large'>('standard');
   const [printMargin, setPrintMargin] = useState<'standard' | 'compact' | 'wide'>('standard');
   const [customHeader, setCustomHeader] = useState('');
@@ -1136,6 +1157,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
   // Helper: Render Alumno Material Section
   // ============================================================
   const renderAlumnoSection = (): React.ReactNode => {
+    if (colorTheme === 'teens') {
+      return renderSemaforoSection();
+    }
     return (
       <div 
         className="folleto-page"
@@ -1349,6 +1373,239 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
         </div>
       </div>
     );
+  };
+
+  const parseDilemas = (text: string) => {
+    if (!text) return [];
+    const blocks = text.split(/(?:\d+[\s.)-]+\s*)/).filter(b => b.trim());
+    return blocks.map(block => {
+      const lines = block.split('\n').map(l => l.trim()).filter(l => l);
+      if (lines.length === 0) return null;
+      const question = lines[0];
+      const options = lines.slice(1).map(opt => opt.replace(/^(?:[-*•]|\b[A-Da-d][\s.)-]+)\s*/, '').trim());
+      return { question, options: options.filter(o => o) };
+    }).filter((b): b is { question: string; options: string[] } => b !== null && !!b.question);
+  };
+
+  const parseReflectionQuestions = (text: string) => {
+    if (!text) return [];
+    return text.split('\n')
+      .map(l => l.trim().replace(/^(?:\d+[\s.)-]+|[-*•])\s*/, ''))
+      .filter(l => l.length > 5);
+  };
+
+  const parseSemaforoContent = (content: string) => {
+    const data = {
+      tema: 'Semáforo de Decisiones',
+      verde: 'Personas, actividades o contenidos que me ayudan a crecer y hacer lo correcto.',
+      amarillo: 'No son necesariamente malas, pero pueden distraerme o confundir mi mente.',
+      rojo: 'Personas o contenidos que me hacen pecar y tomar malas decisiones.'
+    };
+
+    if (!content) return data;
+
+    const temaMatch = content.match(/(?:TEMA|TÍTULO)[\s:-]+([^\n]+)/i);
+    const verdeMatch = content.match(/VERDE[\s:-]+([^\n]+)/i);
+    const amarilloMatch = content.match(/AMARILLO[\s:-]+([^\n]+)/i);
+    const rojoMatch = content.match(/ROJO[\s:-]+([^\n]+)/i);
+
+    if (temaMatch) data.tema = temaMatch[1].trim();
+    if (verdeMatch) data.verde = verdeMatch[1].trim();
+    if (amarilloMatch) data.amarillo = amarilloMatch[1].trim();
+    if (rojoMatch) data.rojo = rojoMatch[1].trim();
+
+    return data;
+  };
+
+  const renderTeensPage2 = () => {
+    const dilemas = parseDilemas(lesson.materiales);
+    const questions = parseReflectionQuestions(lesson.instrucciones);
+    const semaforoData = parseSemaforoContent(lesson.alumnoContenido);
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
+        {/* Header */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'row', 
+          alignItems: 'center', 
+          gap: '16px', 
+          backgroundColor: themeStyles.bgLight, 
+          border: themeStyles.border, 
+          padding: '12px 16px', 
+          borderRadius: '20px'
+        }}>
+          <div style={{ 
+            backgroundColor: themeStyles.primary, 
+            color: '#ffffff', 
+            fontWeight: 900, 
+            fontSize: '11px', 
+            letterSpacing: '0.1em', 
+            textTransform: 'uppercase', 
+            padding: '8px 20px', 
+            borderRadius: '12px', 
+            border: '2px solid #ffffff',
+            transform: 'rotate(-1deg)'
+          }}>
+            🚥 HOJA DE APLICACIÓN
+          </div>
+          <div style={{ flex: 1 }}>
+            <h4 style={{ margin: 0, fontWeight: 900, color: themeStyles.primaryText, fontSize: fontStyles.h2 }}>Toma de Decisiones y Reflexión</h4>
+            <p style={{ margin: '2px 0 0 0', fontSize: '10px', color: themeStyles.mutedText, fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic' }}>Aplicación de principios bíblicos ante las decisiones diarias.</p>
+          </div>
+        </div>
+
+        {/* 1. Semáforo de Decisiones */}
+        <div style={{ border: themeStyles.cardBorder, backgroundColor: themeStyles.bgLight, padding: '16px', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 900, color: themeStyles.primaryText, textTransform: 'uppercase', display: 'block' }}>
+            1. SEMÁFORO DE DECISIONES: {semaforoData.tema}
+          </span>
+          
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'stretch' }}>
+            {/* Mini Traffic Light graphic */}
+            <div style={{ 
+              width: '45px', 
+              backgroundColor: '#1e293b', 
+              borderRadius: '20px', 
+              padding: '10px 4px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              height: '140px',
+              alignSelf: 'center'
+            }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#ef4444', border: '2px solid #334155', boxShadow: '0 0 8px #ef4444' }} />
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#eab308', border: '2px solid #334155', boxShadow: '0 0 8px #eab308' }} />
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', backgroundColor: '#22c55e', border: '2px solid #334155', boxShadow: '0 0 8px #22c55e' }} />
+            </div>
+
+            {/* Three columns */}
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+              {/* Red Column */}
+              <div style={{ border: '1.5px solid #ef4444', borderRadius: '14px', backgroundColor: '#fff5f5', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#b91c1c', textTransform: 'uppercase', textAlign: 'center', display: 'block' }}>ROJO: Detente</span>
+                <p style={{ fontSize: '8px', color: '#991b1b', margin: 0, textAlign: 'center', lineHeight: 1.2 }}>{semaforoData.rojo}</p>
+                <div style={{ borderBottom: '1px solid #fecaca', height: '18px', marginTop: '6px' }}></div>
+                <div style={{ borderBottom: '1px solid #fecaca', height: '18px' }}></div>
+                <div style={{ borderBottom: '1px solid #fecaca', height: '18px' }}></div>
+              </div>
+
+              {/* Yellow Column */}
+              <div style={{ border: '1.5px solid #eab308', borderRadius: '14px', backgroundColor: '#fffbeb', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#a16207', textTransform: 'uppercase', textAlign: 'center', display: 'block' }}>AMARILLO: Cuidado</span>
+                <p style={{ fontSize: '8px', color: '#854d0e', margin: 0, textAlign: 'center', lineHeight: 1.2 }}>{semaforoData.amarillo}</p>
+                <div style={{ borderBottom: '1px solid #fef08a', height: '18px', marginTop: '6px' }}></div>
+                <div style={{ borderBottom: '1px solid #fef08a', height: '18px' }}></div>
+                <div style={{ borderBottom: '1px solid #fef08a', height: '18px' }}></div>
+              </div>
+
+              {/* Green Column */}
+              <div style={{ border: '1.5px solid #22c55e', borderRadius: '14px', backgroundColor: '#f0fdf4', padding: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '9px', fontWeight: 900, color: '#15803d', textTransform: 'uppercase', textAlign: 'center', display: 'block' }}>VERDE: Adelante</span>
+                <p style={{ fontSize: '8px', color: '#166534', margin: 0, textAlign: 'center', lineHeight: 1.2 }}>{semaforoData.verde}</p>
+                <div style={{ borderBottom: '1px solid #bbf7d0', height: '18px', marginTop: '6px' }}></div>
+                <div style={{ borderBottom: '1px solid #bbf7d0', height: '18px' }}></div>
+                <div style={{ borderBottom: '1px solid #bbf7d0', height: '18px' }}></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Dilemas "¿Qué Harías?" */}
+        <div style={{ border: themeStyles.cardBorder, backgroundColor: themeStyles.bgLight, padding: '16px', borderRadius: '20px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 900, color: themeStyles.primaryText, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+            2. ¿QUÉ HARÍAS? <span style={{ fontWeight: 'normal', textTransform: 'none', color: themeStyles.mutedText, fontSize: '10px' }}>— Lee cada situación y marca tu decisión.</span>
+          </span>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            {dilemas.length > 0 ? (
+              dilemas.slice(0, 2).map((dilema, di) => (
+                <div key={di} style={{ border: '1px solid ' + themeStyles.divider, borderRadius: '12px', padding: '12px', backgroundColor: '#ffffff' }}>
+                  <p style={{ fontWeight: 'bold', fontSize: '10px', margin: '0 0 6px 0', color: themeStyles.text, lineHeight: 1.3 }}>{di + 1}. {dilema.question}</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '9px' }}>
+                    {dilema.options.map((opt, oi) => (
+                      <label key={oi} style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', lineHeight: 1.2 }}>
+                        <input type="checkbox" style={{ accentColor: themeStyles.primary }} /> {opt}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ gridColumn: 'span 2', border: '1px solid ' + themeStyles.divider, borderRadius: '12px', padding: '12px', backgroundColor: '#ffffff' }}>
+                <p style={{ fontWeight: 'bold', fontSize: '10.5px', margin: '0 0 6px 0', color: themeStyles.text }}>Dilemas de la Lección</p>
+                <div style={{ fontSize: '10px', fontFamily: '"Lora", Georgia, serif', color: themeStyles.text, lineHeight: 1.4 }}>
+                  {formatPdfContent(lesson.materiales)}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 3. Reflexión Personal */}
+        <div style={{ border: themeStyles.cardBorder, backgroundColor: themeStyles.bgLight, padding: '16px', borderRadius: '20px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 900, color: themeStyles.primaryText, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+            3. REFLEXIÓN PERSONAL <span style={{ fontWeight: 'normal', textTransform: 'none', color: themeStyles.mutedText, fontSize: '10px' }}>— Analiza y escribe tu respuesta.</span>
+          </span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            {questions.length > 0 ? (
+              questions.slice(0, 2).map((q, qi) => (
+                <div key={qi}>
+                  <span style={{ fontSize: '9.5px', fontWeight: 'bold', color: themeStyles.text, display: 'block', minHeight: '24px', lineHeight: 1.3 }}>{qi + 1}. {q}</span>
+                  <div style={{ borderBottom: '1px dashed ' + themeStyles.divider, height: '20px' }}></div>
+                  <div style={{ borderBottom: '1px dashed ' + themeStyles.divider, height: '20px' }}></div>
+                </div>
+              ))
+            ) : (
+              <>
+                <div>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: themeStyles.mutedText }}>¿Qué te enseñó la lección de hoy?</span>
+                  <div style={{ borderBottom: '1px dashed ' + themeStyles.divider, height: '24px' }}></div>
+                  <div style={{ borderBottom: '1px dashed ' + themeStyles.divider, height: '20px' }}></div>
+                </div>
+                <div>
+                  <span style={{ fontSize: '9px', fontWeight: 'bold', color: themeStyles.mutedText }}>¿Cómo puedes aplicarlo esta semana?</span>
+                  <div style={{ borderBottom: '1px dashed ' + themeStyles.divider, height: '24px' }}></div>
+                  <div style={{ borderBottom: '1px dashed ' + themeStyles.divider, height: '20px' }}></div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* 4. Desafío de la Semana */}
+        <div style={{ backgroundColor: themeStyles.bgLight, border: themeStyles.border, padding: '16px', borderRadius: '20px', position: 'relative', marginTop: '4px' }}>
+          <span style={{ 
+            position: 'absolute', 
+            top: '-10px', 
+            left: '20px', 
+            backgroundColor: themeStyles.primary, 
+            color: '#ffffff', 
+            fontWeight: 900, 
+            fontSize: '8px', 
+            letterSpacing: '0.1em', 
+            textTransform: 'uppercase', 
+            padding: '2px 12px', 
+            borderRadius: '9999px'
+          }}>
+            🏆 DESAFÍO DE LA SEMANA
+          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '4px', fontSize: '9.5px', color: themeStyles.text }}>
+            <div><strong>1. {questions.length > 2 ? questions[2] : 'Acción práctica para aplicar lo aprendido:'}</strong></div>
+            <div style={{ borderBottom: '1px dashed ' + themeStyles.divider, height: '18px', width: '95%' }}></div>
+            <div><strong>2. Versículo clave de memoria (RVR1960):</strong> {lesson.versiculoRef}</div>
+            <p style={{ margin: 0, fontFamily: '"Lora", Georgia, serif', fontStyle: 'italic', fontSize: '9px', color: themeStyles.mutedText, lineHeight: 1.3 }}>
+              {lesson.versiculoTexto}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSemaforoSection = (): React.ReactNode => {
+    return null;
   };
 
   return (
@@ -1791,7 +2048,10 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                     breakBefore: 'page'
                   }}
                 >
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  {colorTheme === 'teens' ? (
+                    renderTeensPage2()
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   
                   {/* TENGO TALENTO HEADER */}
                   <div 
@@ -1920,7 +2180,8 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                       {formatPdfContent(lesson.desafioTexto)}
                     </div>
                   </div>
-                  </div>
+                    </div>
+                  )}
 
                   {/* Footer footer logo */}
                   <div 
