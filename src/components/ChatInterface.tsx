@@ -7,6 +7,7 @@ import {
   generateTitleFromQuery
 } from '../services/chatService';
 import type { ChatSession } from '../services/chatService';
+import { CHAT_HISTORY_LIMIT } from '../config/aiConfig';
 import { confessionChapters } from '../data/confesion1689';
 import SundaySchoolGenerator from './SundaySchoolGenerator';
 import LessonBookGenerator from './LessonBookGenerator';
@@ -176,34 +177,38 @@ export default function ChatInterface() {
     }
 
     try {
-      const url = `https://bible-api.deno.dev/api/read/rv1960/${parsed.book}/${parsed.chapter}`;
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error("No se pudo obtener el texto bíblico.");
-      }
-      const data = await res.json();
-
-      const filteredVerses = data.vers
-        .filter((v: any) => {
-          const num = v.number;
-          if (parsed.endVerse) {
-            return num >= parsed.startVerse && num <= parsed.endVerse;
-          }
-          return num === parsed.startVerse;
-        })
-        .map((v: any) => ({
-          number: v.number,
-          text: v.verse
-        }));
-
-      if (filteredVerses.length === 0) {
-        throw new Error(`No se encontró el versículo ${parsed.startVerse} en el Capítulo ${parsed.chapter}.`);
-      }
-
-      setVerseContent({
-        reference: ref,
-        verses: filteredVerses
-      });
+      // TODO: API bible-api.deno.dev fue descontinuada (Deno Deploy Classic sunset 2026-07-20)
+      // Migrar a alternativa que soporte RVR1960
+      // const url = `https://bible-api.deno.dev/api/read/rv1960/${parsed.book}/${parsed.chapter}`;
+      // const res = await fetch(url);
+      // if (!res.ok) {
+      //   throw new Error("No se pudo obtener el texto bíblico.");
+      // }
+      // const data = await res.json();
+      //
+      // const filteredVerses = data.vers
+      //   .filter((v: any) => {
+      //     const num = v.number;
+      //     if (parsed.endVerse) {
+      //       return num >= parsed.startVerse && num <= parsed.endVerse;
+      //     }
+      //     return num === parsed.startVerse;
+      //   })
+      //   .map((v: any) => ({
+      //     number: v.number,
+      //     text: v.verse
+      //   }));
+      //
+      // if (filteredVerses.length === 0) {
+      //   throw new Error(`No se encontró el versículo ${parsed.startVerse} en el Capítulo ${parsed.chapter}.`);
+      // }
+      //
+      // setVerseContent({
+      //   reference: ref,
+      //   verses: filteredVerses
+      // });
+      
+      throw new Error("Servicio de versículos temporalmente no disponible. API externa descontinuada.");
     } catch (err: any) {
       console.error(err);
       setVerseError(err.message || "Error al conectar con la base de datos bíblica.");
@@ -234,18 +239,85 @@ export default function ChatInterface() {
       .replace(/```[\s\S]*?```/g, '')
       .trim();
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    const voices = window.speechSynthesis.getVoices();
-    const spanishVoice = voices.find(v => v.lang.startsWith('es'));
-    if (spanishVoice) {
-      utterance.voice = spanishVoice;
+    if (!cleanText) {
+      console.warn('[TTS] No hay texto para reproducir');
+      return;
     }
 
-    utterance.onend = () => setCurrentlySpeakingId(null);
-    utterance.onerror = () => setCurrentlySpeakingId(null);
+    console.log('[TTS] Iniciando reproducción:', cleanText.substring(0, 50) + '...');
 
-    setCurrentlySpeakingId(messageId);
-    window.speechSynthesis.speak(utterance);
+    // Función que inicia la reproducción una vez las voces están disponibles
+    const startSpeaking = () => {
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utterance.lang = 'es-ES';
+      utterance.rate = 0.9;
+
+      // Seleccionar voz española
+      const voices = window.speechSynthesis.getVoices();
+      console.log('[TTS] Voces disponibles:', voices.length);
+      const spanishVoice = voices.find(v => v.lang.startsWith('es'));
+      if (spanishVoice) {
+        utterance.voice = spanishVoice;
+        console.log('[TTS] Voz seleccionada:', spanishVoice.name);
+      } else {
+        console.warn('[TTS] No se encontró voz en español, usando voz por defecto');
+      }
+
+      setCurrentlySpeakingId(messageId);
+
+      // Workaround para bug de Chrome: speechSynthesis se pausa silenciosamente
+      // después de ~15 segundos en textos largos. Hacemos resume cada 10 segundos.
+      let resumeInterval: ReturnType<typeof setInterval> | null = null;
+
+      utterance.onend = () => {
+        if (resumeInterval) clearInterval(resumeInterval);
+        console.log('[TTS] Reproducción finalizada');
+        setCurrentlySpeakingId(null);
+      };
+
+      utterance.onerror = (event) => {
+        console.error('[TTS] Error:', event.error, event);
+        if (resumeInterval) clearInterval(resumeInterval);
+        setCurrentlySpeakingId(null);
+      };
+
+      window.speechSynthesis.speak(utterance);
+
+      resumeInterval = setInterval(() => {
+        if (!window.speechSynthesis.speaking) {
+          if (resumeInterval) clearInterval(resumeInterval);
+          resumeInterval = null;
+          return;
+        }
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      }, 10000);
+    };
+
+    // Las voces se cargan de forma asíncrona en Chrome
+    // Si no están disponibles aún, esperamos el evento voiceschanged
+    const currentVoices = window.speechSynthesis.getVoices();
+    if (currentVoices.length > 0) {
+      console.log('[TTS] Voces ya disponibles, iniciando directamente');
+      startSpeaking();
+    } else {
+      console.log('[TTS] Voces no disponibles aún, esperando voiceschanged...');
+      const onVoicesChanged = () => {
+        console.log('[TTS] Evento voiceschanged disparado');
+        window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+        startSpeaking();
+      };
+      window.speechSynthesis.addEventListener('voiceschanged', onVoicesChanged);
+      
+      // Timeout de seguridad: si las voces no cargan en 3 segundos, intentar de todas formas
+      setTimeout(() => {
+        if (currentlySpeakingId === messageId && window.speechSynthesis.getVoices().length === 0) {
+          console.warn('[TTS] Timeout: iniciando sin voces disponibles');
+          window.speechSynthesis.removeEventListener('voiceschanged', onVoicesChanged);
+          startSpeaking();
+        }
+      }, 3000);
+    }
   };
 
   // Función para copiar estudio formateado en Markdown
@@ -395,7 +467,7 @@ export default function ChatInterface() {
     setMessages(messagesWithAssistant);
 
     try {
-      const history = messages.slice(-6).map(m => ({ role: m.role, content: m.content }));
+      const history = messages.slice(-CHAT_HISTORY_LIMIT).map(m => ({ role: m.role, content: m.content }));
       let currentContent = '';
       let currentReasoning = '';
 
@@ -488,7 +560,7 @@ export default function ChatInterface() {
     setMessages(messagesWithAssistant);
 
     try {
-      const history = messages.slice(-6).map(m => ({ role: m.role, content: m.content }));
+      const history = messages.slice(-CHAT_HISTORY_LIMIT).map(m => ({ role: m.role, content: m.content }));
       let currentContent = '';
       let currentReasoning = '';
 
@@ -901,7 +973,11 @@ export default function ChatInterface() {
                         {/* Barra de Herramientas para el Asistente */}
                         {message.role === 'assistant' && message.content && (
                           <div className="flex items-center gap-4 mt-6 pt-4 border-t border-amber-500/10 text-xs text-stone-400">
-                            <button
+                            {/* TODO: TTS deshabilitado temporalmente - speechSynthesis del navegador es muy lento
+                             * Reemplazar con librería externa (responsivevoice.js) o servicio cloud TTS
+                             * El código de handleSpeak está disponible para reactivar cuando se implemente la solución
+                             */}
+                            {/* <button
                               onClick={() => handleSpeak(message.content, message.id)}
                               className="flex items-center gap-1.5 hover:text-amber-300 transition-colors duration-200 cursor-pointer"
                               title="Escuchar consejo"
@@ -916,7 +992,7 @@ export default function ChatInterface() {
                                   <span>🔊 Escuchar</span>
                                 </>
                               )}
-                            </button>
+                            </button> */}
                             <button
                               onClick={() => handleCopyMessage(message)}
                               className="flex items-center gap-1.5 hover:text-amber-300 transition-colors duration-200 cursor-pointer"

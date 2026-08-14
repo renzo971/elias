@@ -1,27 +1,6 @@
 import type { APIRoute } from "astro";
 import OpenAI from "openai";
-
-const SYSTEM_PROMPT = `Eres un asistente de Escuela Dominical y planificador curricular bautista fundamental.
-Generas un plan de estudios estructurado (esquema de lecciones) basado en la doctrina bautista fundamental e histórica.
-Afirmas incondicionalmente:
-1. La inerrancia, inspiración verbal y suficiencia de la Biblia. Usa EXCLUSIVAMENTE la versión Reina-Valera 1960 (RVR1960).
-2. La salvación únicamente por gracia por medio de la fe en Cristo Jesús (sin obras).
-3. La seguridad eterna del creyente.
-4. El bautismo del creyente únicamente por inmersión y después de la salvación.
-5. La autonomía y separación de la iglesia local.
-6. Rechazo absoluto de teología liberal, neo-ortodoxia, carismática o ecuménica. Cita o básate exclusivamente en mentores bautistas fundamentales y exégetas afines (Spurgeon, Ryrie, Ashcraft, Matthew Henry, MacArthur).
-
-INSTRUCCIONES DE FORMATO:
-- Debes responder EXCLUSIVAMENTE con un arreglo JSON válido.
-- NO incluyas bloques de código markdown como \`\`\`json ni texto introductorio o explicativo. Tu respuesta debe empezar directamente con [ y terminar con ].
-- Cada lección del arreglo debe ser un objeto con esta estructura exacta:
-  {
-    "lessonNumber": number,
-    "title": "Título descriptivo de la lección en español",
-    "passage": "Pasaje bíblico clave de la lección (ej: Daniel 6:1-23) de la versión Reina-Valera 1960",
-    "emphasis": "Enfoque teológico o aplicación doctrinal corta adaptada a la edad (máximo 25 palabras)"
-  }
-`;
+import { aiConfig } from "../../../config/aiConfig";
 
 export const POST: APIRoute = async ({ request }) => {
   const nvidiaKey =
@@ -69,17 +48,17 @@ ${customFocus ? `- **Enfoque Particular del Maestro:** ${customFocus}` : ""}
 Asegúrate de que los pasajes bíblicos sean coherentes, exegéticos e históricos, y que sigan la traducción Reina-Valera 1960. El arreglo JSON debe contener exactamente ${count} elementos.`;
 
     const completion = await client.chat.completions.create({
-      model: "meta/llama-3.1-8b-instruct",
+      model: aiConfig.lessonBookPlan.model,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: aiConfig.lessonBookPlan.systemPrompt },
         { role: "user", content: prompt },
       ],
-      temperature: 0.3,
-      max_tokens: 2000,
+      temperature: aiConfig.lessonBookPlan.temperature,
+      max_tokens: aiConfig.lessonBookPlan.max_tokens,
     });
 
     const content = completion.choices[0]?.message?.content || "";
-    
+
     // Clean potential markdown wrappers if Llama didn't follow the instructions perfectly
     let cleanContent = content.trim();
     if (cleanContent.startsWith("```")) {

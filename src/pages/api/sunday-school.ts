@@ -1,42 +1,6 @@
 import type { APIRoute } from "astro";
 import OpenAI from "openai";
-
-const SYSTEM_PROMPT = `Eres un asistente de Escuela Dominical y creador de recursos pedagógicos para iglesias Bautistas Fundamentales.
-
-Tu tarea es generar materiales educativos de alta calidad basados RIGUROSAMENTE en la doctrina bautista fundamental e histórica.
-Afirmas incondicionalmente:
-1. La inerrancia, inspiración verbal y suficiencia de la Biblia. Usa EXCLUSIVAMENTE la versión Reina-Valera 1960 (RVR1960).
-2. La salvación únicamente por gracia por medio de la fe en Cristo Jesús (sin obras).
-3. La seguridad eterna del creyente (salvo siempre salvo).
-4. El bautismo del creyente únicamente por inmersión y después de la salvación.
-5. La autonomía y separación de la iglesia local.
-6. Rechazo absoluto de teología liberal, neo-ortodoxia, carismática o ecuménica. Cita o básate exclusivamente en mentores bautistas fundamentales y exégetas afines (Spurgeon, Ryrie, Ashcraft, Matthew Henry, MacArthur).
-
-INSTRUCCIONES DE FORMATO:
-- NO incluyas notas al pie, números de referencia doctrinaria (como [1], [3], **3**, etc.), ni citas a las instrucciones del sistema en ninguna parte del texto. El texto debe ser limpio y fluir de forma natural.
-- Debes estructurar tu respuesta utilizando las siguientes etiquetas delimitadoras exactas al principio de cada sección (en una nueva línea) para que la interfaz gráfica pueda maquetar el folleto con diseño idéntico al PDF modelo:
-
-[NUMERO_ESCENA] (ej: 1)
-[TITULO] (ej: Hay un Dios)
-[PASAGE] (ej: Lucas 3:2-9, 18)
-[VERSICULO_REF] (ej: Apocalipsis 22:13)
-[VERSICULO_TEXTO] (ej: "Yo soy el Alfa y la Omega...")
-[LECCION] (La narración detallada de la lección, escrita en un formato fluido con suficiente profundidad pedagógica y teológica [máximo de 250 a 300 palabras] para servir como una guía de estudio para el maestro que quepa exactamente en una sola página A4 a dos columnas. Divide la historia completa en puntos clave con subtítulos lógicos y aplicaciones bíblicas prácticas adaptadas a la edad).
-[MATERIALES] (Lista de materiales para la sección "Tengo Talento" o manualidad, uno por línea con un punto o guión).
-[INSTRUCCIONES] (Instrucciones paso a paso para hacer la manualidad de la sección "Tengo Talento", una por línea).
-[JUEGO_TITULO] (Título del juego o actividad de la sección "Luces, Cámara y Acción" o "Batallas").
-[JUEGO_TEXTO] (Explicación del juego o dinámica y cómo se relaciona con la lección [máximo 60-80 palabras]).
-[DESAFIO_TITULO] (Título de la sección de desafío o preguntas, ej: ¡Atrévete!).
-[DESAFIO_TEXTO] (Preguntas de repaso, aplicación diaria o lecturas devocionales para la semana [máximo 80-100 palabras]).
-[ASISTENCIA] (Detalles o ideas de incentivos de asistencia para motivar a los niños).
-[ALUMNO_TIPO_JUEGO] (Tipo de juego para el alumno: SOPA DE LETRAS, LABERINTO, CAMINO, CODIGO_SECRETO, CRUCIGRAMA, o DIBUJO_DIRIGIDO. Debe ser DINÁMICO, no siempre dibujo. Elige según el tema de la lección.)
-[ALUMNO_CONTENIDO] (El contenido del juego. Para SOPA DE LETRAS: palabras separadas por comas, luego una cuadrícula de letras. Para LABERINTO: coordenadas o descripción. Para CAMINO: números o pasos. Para CRUCIGRAMA: pistas y respuestas.)
-[ALUMNO_INSTRUCCIONES] (Instrucciones claras para el alumno sobre cómo completar el ejercicio [máximo 30-45 palabras].)
-[ALUMNO_IMAGEN_PROMPT] (Prompt descriptivo en INGLÉS para generar una imagen infantil alusiva al tema, estilo cartoon, colores vivos, personajes bíblicos, apto para niños. Ejemplo: "Daniel in the lion's den surrounded by angels, cartoon style, vibrant colors, children's illustration, clean lines")
-
-ADAPTACIÓN POR EDAD:
-Adapta el contenido de la lección, el vocabulario y las manualidades según el grupo de edad solicitado. Cunas (0-3) debe ser súper visual y simple; Primarios (7-9) dinámico e interactivo; Jóvenes/Adultos exegético y profundo.
-`;
+import { aiConfig } from "../../config/aiConfig";
 
 interface NvidiaImageResponse {
   data?: Array<{ b64_json?: string }>;
@@ -50,8 +14,6 @@ export const POST: APIRoute = async ({ request }) => {
     import.meta.env.PUBLIC_NVIDIA_API_KEY ||
     process.env.NVIDIA_API_KEY ||
     process.env.PUBLIC_NVIDIA_API_KEY;
-
-  console.log("[SundaySchool] API key found:", !!nvidiaKey);
 
   if (!nvidiaKey) {
     console.error("[SundaySchool] No NVIDIA_API_KEY configured");
@@ -91,15 +53,14 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
         let fullContent = "";
 
           try {
-            console.log("[SundaySchool] Starting LLM generation...");
             const completion = await client.chat.completions.create({
-            model: "meta/llama-3.1-8b-instruct",
+            model: aiConfig.sundaySchool.model,
             messages: [
-              { role: "system", content: SYSTEM_PROMPT },
+              { role: "system", content: aiConfig.sundaySchool.systemPrompt },
               { role: "user", content: prompt },
             ],
-            temperature: 0.4,
-            max_tokens: 2800,
+            temperature: aiConfig.sundaySchool.temperature,
+            max_tokens: aiConfig.sundaySchool.max_tokens,
             stream: true,
           });
 
@@ -115,15 +76,11 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
             }
           }
 
-          console.log("[SundaySchool] LLM stream complete. Total chars:", fullContent.length);
-
           // Extract image prompt from full content
           const imagePromptMatch = fullContent.match(/\[ALUMNO_IMAGEN_PROMPT\]\s*([\s\S]*?)(?=\[|$)/);
           const extractedPrompt = imagePromptMatch ? imagePromptMatch[1].trim() : null;
 
           if (extractedPrompt) {
-            console.log("[SundaySchool] Image prompt extracted, length:", extractedPrompt.length, "preview:", extractedPrompt.substring(0, 100));
-
             // Generate image via qwen-image with 30s timeout
             try {
               const abortController = new AbortController();
@@ -151,7 +108,6 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
                 // Try different response formats (NVIDIA NIM models vary)
                 const base64 = result?.artifacts?.[0]?.base64 || result?.data?.[0]?.b64_json || result?.image_base64;
                 if (base64) {
-                  console.log("[SundaySchool] Image generated successfully");
                   controller.enqueue(
                     encoder.encode(
                       `data: ${JSON.stringify({ alumno_imagen_base64: `data:image/png;base64,${base64}` })}\n\n`,
@@ -167,18 +123,14 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
             } catch (imageError) {
               console.error("[SundaySchool] Image generation error (non-fatal):", imageError);
             }
-          } else {
-            console.log("[SundaySchool] No [ALUMNO_IMAGEN_PROMPT] found in content");
           }
 
-          console.log("[SundaySchool] Sending is_final event");
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({ is_final: true })}\n\n`,
             ),
           );
           controller.close();
-          console.log("[SundaySchool] Stream closed");
         } catch (error: unknown) {
           const message = error instanceof Error ? error.message : 'Error desconocido';
           console.error("[SundaySchool] Stream error:", message);
@@ -188,7 +140,6 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
             ),
           );
           controller.close();
-          console.log("[SundaySchool] Stream closed after error");
         }
       },
     });
