@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
-import OpenAI from "openai";
 import { aiConfig } from "../../config/aiConfig";
+import { getClient } from "../../config/aiProvider";
 
 interface NvidiaImageResponse {
   data?: Array<{ b64_json?: string }>;
@@ -9,6 +9,7 @@ interface NvidiaImageResponse {
 }
 
 export const POST: APIRoute = async ({ request }) => {
+  // NVIDIA key stays inline: it is only used for flux.1-schnell image generation.
   const nvidiaKey =
     import.meta.env.NVIDIA_API_KEY ||
     import.meta.env.PUBLIC_NVIDIA_API_KEY ||
@@ -23,10 +24,14 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
-  const client = new OpenAI({
-    baseURL: "https://integrate.api.nvidia.com/v1",
-    apiKey: nvidiaKey,
-  });
+  let client: ReturnType<typeof getClient>;
+  try {
+    client = getClient("sundaySchool");
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Error de configuración del proveedor";
+    return new Response(JSON.stringify({ error: message }), { status: 500 });
+  }
 
   try {
     const body = await request.json();
@@ -61,6 +66,7 @@ Usa estrictamente la Reina-Valera 1960 y mantén la teología bautista fundament
             ],
             temperature: aiConfig.sundaySchool.temperature,
             max_tokens: aiConfig.sundaySchool.max_tokens,
+            reasoning_effort: aiConfig.sundaySchool.reasoningEffort,
             stream: true,
           });
 
