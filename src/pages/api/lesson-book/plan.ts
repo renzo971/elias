@@ -1,25 +1,19 @@
 import type { APIRoute } from "astro";
-import OpenAI from "openai";
 import { aiConfig } from "../../../config/aiConfig";
+import { getClient } from "../../../config/aiProvider";
 
 export const POST: APIRoute = async ({ request }) => {
-  const nvidiaKey =
-    import.meta.env.NVIDIA_API_KEY ||
-    import.meta.env.PUBLIC_NVIDIA_API_KEY ||
-    process.env.NVIDIA_API_KEY ||
-    process.env.PUBLIC_NVIDIA_API_KEY;
-
-  if (!nvidiaKey) {
+  let client: ReturnType<typeof getClient>;
+  try {
+    client = getClient("lessonBookPlan");
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Error de configuración del proveedor";
     return new Response(
-      JSON.stringify({ error: "NVIDIA_API_KEY no configurada" }),
+      JSON.stringify({ error: message }),
       { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
-
-  const client = new OpenAI({
-    baseURL: "https://integrate.api.nvidia.com/v1",
-    apiKey: nvidiaKey,
-  });
 
   try {
     const body = await request.json();
@@ -55,6 +49,7 @@ Asegúrate de que los pasajes bíblicos sean coherentes, exegéticos e históric
       ],
       temperature: aiConfig.lessonBookPlan.temperature,
       max_tokens: aiConfig.lessonBookPlan.max_tokens,
+      reasoning_effort: aiConfig.lessonBookPlan.reasoningEffort,
     });
 
     const content = completion.choices[0]?.message?.content || "";

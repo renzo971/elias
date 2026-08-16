@@ -30,7 +30,25 @@ export interface EndpointConfig {
   temperature: number;
   max_tokens: number;
   systemPrompt: string;
+  baseURL: string;
+  apiKeyEnv: string;
+  reasoningEffort: ReasoningEffort;
 }
+
+/**
+ * Reasoning-effort levels supported by DeepSeek V4 Flash (OpenAI-compatible).
+ * `low` prevents the reasoning model from exhausting its token budget on
+ * `reasoning_content` before emitting structured output ([TAG] delimiters,
+ * ```json fences, bare JSON arrays).
+ */
+export type ReasoningEffort =
+  | "none"
+  | "minimal"
+  | "low"
+  | "medium"
+  | "high"
+  | "xhigh"
+  | "max";
 
 /** Top-level AI configuration. */
 export interface AIConfig {
@@ -130,24 +148,46 @@ INSTRUCCIONES DE FORMATO:
     "emphasis": "Enfoque teológico o aplicación doctrinal corta adaptada a la edad (máximo 25 palabras)"
   }`;
 
+/**
+ * OpenAI-compatible gateway URL for the OpenCode Go provider.
+ * Verified live: `https://opencode.ai/zen/go/v1` serves `deepseek-v4-flash`
+ * (the `api.opencode.go` placeholder from the design does not resolve).
+ */
+const OPENCODE_GO_BASE_URL = "https://opencode.ai/zen/go/v1";
+
+/** Env var holding the OpenCode Go provider API key. */
+const OPENCODE_GO_API_KEY_ENV = "OPENCODE_GO_API_KEY";
+
+/** Model ID for DeepSeek V4 Flash on the OpenCode Go gateway. */
+const DEEPSEEK_V4_FLASH_MODEL = "deepseek-v4-flash";
+
 /** Centralized AI configuration — the single source of truth for model parameters. */
 export const aiConfig: AIConfig = {
   chat: {
-    model: "meta/llama-3.1-8b-instruct",
+    model: DEEPSEEK_V4_FLASH_MODEL,
     temperature: 0.3,
-    max_tokens: 2000,
+    max_tokens: 4000,
     systemPrompt: CHAT_SYSTEM_PROMPT,
+    baseURL: OPENCODE_GO_BASE_URL,
+    apiKeyEnv: OPENCODE_GO_API_KEY_ENV,
+    reasoningEffort: "low",
   },
   sundaySchool: {
-    model: "meta/llama-3.1-8b-instruct",
+    model: DEEPSEEK_V4_FLASH_MODEL,
     temperature: 0.4,
     max_tokens: 2800,
     systemPrompt: SUNDAY_SCHOOL_SYSTEM_PROMPT,
+    baseURL: OPENCODE_GO_BASE_URL,
+    apiKeyEnv: OPENCODE_GO_API_KEY_ENV,
+    reasoningEffort: "low",
   },
   lessonBookPlan: {
-    model: "meta/llama-3.1-8b-instruct",
+    model: DEEPSEEK_V4_FLASH_MODEL,
     temperature: 0.3,
     max_tokens: 2000,
     systemPrompt: LESSON_BOOK_PLAN_SYSTEM_PROMPT,
+    baseURL: OPENCODE_GO_BASE_URL,
+    apiKeyEnv: OPENCODE_GO_API_KEY_ENV,
+    reasoningEffort: "low",
   },
 };

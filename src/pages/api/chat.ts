@@ -1,26 +1,17 @@
 import type { APIRoute } from "astro";
-import OpenAI from "openai";
 import { aiConfig } from "../../config/aiConfig";
+import { getClient } from "../../config/aiProvider";
 import { parseChatMetadata } from "../../config/parseChatMetadata";
 
 export const POST: APIRoute = async ({ request }) => {
-  const nvidiaKey =
-    import.meta.env.NVIDIA_API_KEY ||
-    import.meta.env.PUBLIC_NVIDIA_API_KEY ||
-    process.env.NVIDIA_API_KEY ||
-    process.env.PUBLIC_NVIDIA_API_KEY;
-
-  if (!nvidiaKey) {
-    return new Response(
-      JSON.stringify({ error: "NVIDIA_API_KEY no configurada" }),
-      { status: 500 },
-    );
+  let client: ReturnType<typeof getClient>;
+  try {
+    client = getClient("chat");
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Error de configuración del proveedor";
+    return new Response(JSON.stringify({ error: message }), { status: 500 });
   }
-
-  const client = new OpenAI({
-    baseURL: "https://integrate.api.nvidia.com/v1",
-    apiKey: nvidiaKey,
-  });
 
   try {
     const body = await request.json();
@@ -50,6 +41,7 @@ export const POST: APIRoute = async ({ request }) => {
             ],
             temperature: aiConfig.chat.temperature,
             max_tokens: aiConfig.chat.max_tokens,
+            reasoning_effort: aiConfig.chat.reasoningEffort,
             stream: true,
           });
 
