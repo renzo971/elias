@@ -5,20 +5,20 @@ export default function EliasLogo({ className = "w-5 h-5" }: { className?: strin
     <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="logoGoldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
-          <stop offset="0%" stopColor="#78350f" />
-          <stop offset="30%" stopColor="#b88a3e" />
-          <stop offset="70%" stopColor="#dfb15b" />
+          <stop offset="0%" stopColor="#d97706" />
+          <stop offset="30%" stopColor="#f59e0b" />
+          <stop offset="70%" stopColor="#fbbf24" />
           <stop offset="100%" stopColor="#fef3c7" />
         </linearGradient>
         
         <linearGradient id="logoFlameGrad" x1="0%" y1="100%" x2="0%" y2="0%">
-          <stop offset="0%" stopColor="#b45309" stopOpacity={0.9} />
-          <stop offset="50%" stopColor="#d97706" stopOpacity={0.8} />
-          <stop offset="100%" stopColor="#f59e0b" stopOpacity={0.95} />
+          <stop offset="0%" stopColor="#d97706" stopOpacity={0.9} />
+          <stop offset="50%" stopColor="#f59e0b" stopOpacity={0.8} />
+          <stop offset="100%" stopColor="#fbbf24" stopOpacity={0.95} />
         </linearGradient>
 
         <linearGradient id="logoGlowGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#dfb15b" />
+          <stop offset="0%" stopColor="#f59e0b" />
           <stop offset="100%" stopColor="#ffffff" />
         </linearGradient>
         
