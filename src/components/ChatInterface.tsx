@@ -751,7 +751,7 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="h-full w-full morning-bg text-gray-900 flex flex-col font-body overflow-hidden relative">
+    <div className="min-h-full w-full morning-bg text-gray-900 flex flex-col font-body overflow-y-auto relative">
       {/* Background Decor & Warm Divine Glow */}
       <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] pointer-events-none" />
 

@@ -1352,9 +1352,9 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
   };
 
   return (
-    <div className="flex-1 w-full flex flex-col lg:flex-row gap-6 overflow-hidden relative morning-bg p-4 sm:p-6">
+    <div className="flex-1 w-full flex flex-col lg:flex-row gap-6 overflow-y-auto relative morning-bg p-4 sm:p-6">
       {/* Configuration Panel */}
-      <div className="w-full lg:w-[360px] bg-white shadow-soft rounded-2xl p-5 sm:p-6 flex flex-col overflow-y-auto chat-scroll no-print flex-shrink-0">
+      <div className="w-full lg:w-[360px] bg-white shadow-soft rounded-2xl p-5 sm:p-6 flex flex-col overflow-y-auto chat-scroll no-print flex-shrink-0 max-h-[calc(100vh-120px)] lg:max-h-none">
         <div className="flex items-center gap-2 mb-6 border-b border-gray-200 pb-3">
           <span className="text-[#f59e0b] text-lg">🏫</span>
           <h3 className="text-sm font-heading font-black tracking-widest text-gray-900 uppercase">Folleto Dominical</h3>
