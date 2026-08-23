@@ -2,8 +2,9 @@
 
 @theme {
   /* Lumina Light Premium Palette */
-  --color-primary: #f59e0b;
-  --color-primary-dark: #d97706;
+  /* Text-safe amber tokens: both pass WCAG AA on white surfaces. */
+  --color-primary: #b45309;
+  --color-primary-dark: #92400e;
   --color-accent: #fbbf24;
   --color-surface: #ffffff;
   --color-surface-warm: #fffbf5;
@@ -18,7 +19,7 @@
 }
 
 :root {
-  --primary: #f59e0b;
+  --primary: #b45309;
   --accent: #fbbf24;
   --ethereal: #111827;
   --glass: rgba(255, 255, 255, 0.9);
@@ -28,7 +29,19 @@
 
 * {
   box-sizing: border-box;
+}
 
+button,
+a,
+input,
+select,
+textarea {
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 3px solid #b45309;
+  outline-offset: 2px;
 }
 
 html, body {
@@ -92,7 +105,7 @@ html, body {
   display: inline-block;
   width: 2.5px;
   height: 1.1em;
-   background-color: #f59e0b;
+  background-color: #b45309;
   margin-left: 4px;
   vertical-align: middle;
   animation: blink 1.2s step-end infinite;
@@ -173,6 +186,17 @@ html, body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 /* Lumina Morning Background - warm radial gradients */
@@ -302,4 +326,3 @@ html, body {
     break-after: avoid !important;
   }
 }
-

@@ -49,8 +49,8 @@ const COLOR_THEMES = {
   },
   solemn: {
     name: 'Solemne / Sagrado',
-    primary: '#dfb15b',
-    primaryDark: '#b88a3e',
+    primary: '#b45309',
+    primaryDark: '#92400e',
     primaryText: '#78561d',
     bgLight: '#faf9f6',
     accent: '#292524',
@@ -927,7 +927,7 @@ export default function LessonBookGenerator() {
           {step > 1 && (
             <button
               onClick={() => { setStep(1); setActiveSession(null); }}
-              className="hover-lift bg-gradient-to-br from-primary to-accent text-white transition-all px-4 py-3 min-h-[44px] rounded-xl text-sm font-body cursor-pointer shadow-soft"
+              className="hover-lift bg-gradient-to-br from-primary to-accent text-gray-900 transition-all px-4 py-3 min-h-[44px] rounded-xl text-sm font-body cursor-pointer shadow-soft"
             >
               Nuevo Libro
             </button>
@@ -1034,7 +1034,7 @@ export default function LessonBookGenerator() {
               <button
                 onClick={handleDownloadPdf}
                 disabled={isDownloading}
-                className="w-full min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-white font-bold py-3 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-soft disabled:opacity-50"
+                className="w-full min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-gray-900 font-bold py-3 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-soft disabled:opacity-50"
               >
                 {isDownloading ? (
                   <>⏳ Generando PDF...</>
@@ -1053,7 +1053,7 @@ export default function LessonBookGenerator() {
           {step === 1 && (
             <div className="bg-white shadow-soft border-l-4 border-primary rounded-2xl p-6 md:p-8 space-y-6">
               <div className="flex items-center gap-4">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold">1</div>
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-gray-900 font-bold">1</div>
                 <h2 className="text-xl font-heading text-text-primary font-bold">Parámetros del Libro</h2>
               </div>
               <form onSubmit={handleGeneratePlan} className="space-y-6">
@@ -1114,7 +1114,7 @@ export default function LessonBookGenerator() {
                 </div>
 
                 {planningError && (
-                  <div className="bg-red-950/20 border border-red-800/80 text-red-400 p-4 rounded-xl text-xs">
+                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-xs">
                     ⚠️ {planningError}
                   </div>
                 )}
@@ -1122,7 +1122,7 @@ export default function LessonBookGenerator() {
                 <button
                   type="submit"
                   disabled={isPlanning}
-                  className="min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-white transition-all px-6 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-soft disabled:opacity-50"
+                  className="min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-gray-900 transition-all px-6 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-soft disabled:opacity-50"
                 >
                   {isPlanning ? (
                     <>⏳ Planificando Currículum...</>
@@ -1139,7 +1139,7 @@ export default function LessonBookGenerator() {
             <div className="bg-white shadow-soft border-l-4 border-primary rounded-2xl p-6 md:p-8 space-y-6">
               <div>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold">2</div>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-gray-900 font-bold">2</div>
                   <h2 className="text-xl font-heading text-text-primary font-bold">Esquema de Temas Sugerido</h2>
                 </div>
                 <p className="text-xs font-serif text-text-secondary mt-1">Revisa, edita o cambia cualquier título y pasaje bíblico antes de iniciar la generación en bloque de todas las lecciones.</p>
@@ -1192,7 +1192,7 @@ export default function LessonBookGenerator() {
               <div className="flex gap-4">
                 <button
                   onClick={handleStartBatchGeneration}
-                  className="min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-white font-bold px-6 py-3 rounded-xl text-xs transition-all cursor-pointer shadow-soft"
+                  className="min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-gray-900 font-bold px-6 py-3 rounded-xl text-xs transition-all cursor-pointer shadow-soft"
                 >
                   🚀 Iniciar Generación en Bloque
                 </button>
@@ -1211,7 +1211,7 @@ export default function LessonBookGenerator() {
             <div className="bg-white shadow-soft border-l-4 border-primary rounded-2xl p-6 md:p-8 space-y-6">
               <div>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold">3</div>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-gray-900 font-bold">3</div>
                   <h2 className="text-xl font-heading text-text-primary font-bold">Proceso de Generación del Libro</h2>
                 </div>
                 <p className="text-xs font-serif text-text-secondary mt-1">
@@ -1270,7 +1270,7 @@ export default function LessonBookGenerator() {
               </div>
 
               {batchError && (
-                <div className="bg-red-950/20 border border-red-800/80 text-red-400 p-4 rounded-xl text-xs space-y-2">
+                <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-xs space-y-2">
                   <p>⚠️ Error: {batchError}</p>
                   <button
                     onClick={handleRetryBatch}
@@ -1313,7 +1313,7 @@ export default function LessonBookGenerator() {
               {/* Preview Canvas showing selected lesson sheets */}
               <div className="bg-white shadow-soft border-l-4 border-primary rounded-2xl p-6 md:p-8 flex flex-col items-center">
                 <div className="flex items-center gap-4 mb-4 self-start">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-white font-bold">4</div>
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-gray-900 font-bold">4</div>
                   <span className="text-xs text-text-secondary font-bold font-mono">VISTA PREVIA DEL DOCUMENTO A4 FISICO</span>
                 </div>
                 

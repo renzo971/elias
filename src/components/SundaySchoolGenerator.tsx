@@ -221,8 +221,8 @@ const COLOR_THEMES = {
   },
   solemn: {
     name: 'Solemne / Sagrado',
-    primary: '#dfb15b',
-    primaryDark: '#b88a3e',
+    primary: '#b45309',
+    primaryDark: '#92400e',
     primaryText: '#78561d',
     bgLight: '#faf9f6',
     accent: '#292524',
@@ -1474,7 +1474,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
           <button
             type="submit"
             disabled={isGenerating || !topic.trim()}
-            className="hover-lift w-full min-h-[44px] py-3 bg-gradient-to-br from-[#f59e0b] to-[#fbbf24] hover:from-[#d97706] hover:to-[#f59e0b] rounded-xl text-white font-medium font-heading uppercase tracking-wider transition-all duration-300 disabled:opacity-40 shadow-soft cursor-pointer text-center"
+            className="hover-lift w-full min-h-[44px] py-3 bg-gradient-to-br from-[#b45309] to-[#f59e0b] hover:from-[#92400e] hover:to-[#d97706] rounded-xl text-gray-900 font-medium font-heading uppercase tracking-wider transition-all duration-300 disabled:opacity-40 shadow-soft cursor-pointer text-center"
           >
             {isGenerating ? 'Generando Material...' : 'Generar Material'}
           </button>
@@ -1529,7 +1529,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                 <button
                   onClick={downloadPDF}
                   disabled={isDownloading}
-                  className="hover-lift min-h-[44px] px-4 py-2 bg-gradient-to-br from-[#f59e0b] to-[#fbbf24] hover:from-[#d97706] hover:to-[#f59e0b] rounded-xl text-[10px] font-bold text-gray-900 transition-all cursor-pointer shadow-soft font-heading uppercase tracking-wider disabled:opacity-50"
+                  className="hover-lift min-h-[44px] px-4 py-2 bg-gradient-to-br from-[#b45309] to-[#f59e0b] hover:from-[#92400e] hover:to-[#d97706] rounded-xl text-[10px] font-bold text-gray-900 transition-all cursor-pointer shadow-soft font-heading uppercase tracking-wider disabled:opacity-50"
                 >
                   {isDownloading ? 'Generando PDF...' : '🖨️ Descargar PDF'}
                 </button>
@@ -1963,7 +1963,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                 <p className="text-sm font-body text-gray-600 max-w-md mx-auto">
                   Configura los detalles en el panel izquierdo y presiona "Generar Material" para crear un folleto dominical estructurado con dinámicas, versículos y lecciones listo para imprimir.
                 </p>
-                <button type="button" onClick={() => document.querySelector<HTMLInputElement>('input[placeholder^="Ej: Daniel"]')?.focus()} className="hover-lift min-h-[44px] bg-gradient-to-br from-[#f59e0b] to-[#fbbf24] text-white font-medium px-6 py-3 rounded-xl shadow-soft">
+                <button type="button" onClick={() => document.querySelector<HTMLInputElement>('input[placeholder^="Ej: Daniel"]')?.focus()} className="hover-lift min-h-[44px] bg-gradient-to-br from-[#b45309] to-[#f59e0b] text-gray-900 font-medium px-6 py-3 rounded-xl shadow-soft">
                   Comenzar
                 </button>
               </div>
