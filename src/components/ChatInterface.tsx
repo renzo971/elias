@@ -11,10 +11,11 @@ import { CHAT_HISTORY_LIMIT } from '../config/aiConfig';
 import { confessionChapters } from '../data/confesion1689';
 import SundaySchoolGenerator from './SundaySchoolGenerator';
 import LessonBookGenerator from './LessonBookGenerator';
+import EliasLogo from './EliasLogo';
 
 
 // Componente del Logo Premium de ELÍAS
-const EliasLogo = ({ className = "w-5 h-5" }: { className?: string }) => (
+const LegacyEliasLogo = ({ className = "w-5 h-5" }: { className?: string }) => (
   <svg className={className} viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
     <defs>
       <linearGradient id="logoGoldGrad" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -650,7 +651,7 @@ export default function ChatInterface() {
       }
       if (line.startsWith('## ')) {
         return (
-          <h2 key={lineIndex} className="text-xl font-heading font-bold text-amber-400 mt-8 mb-4 flex items-center gap-2">
+           <h2 key={lineIndex} className="text-xl font-heading font-bold text-amber-700 mt-8 mb-4 flex items-center gap-2">
             <span className="w-1.5 h-6 bg-amber-600 rounded-full" />
             {line.slice(3)}
           </h2>
@@ -658,13 +659,13 @@ export default function ChatInterface() {
       }
       if (line.match(/^(\d+\.|\*|-)\s/)) {
         return (
-          <div key={lineIndex} className="ml-2 pl-4 border-l-2 border-amber-500/20 my-4 py-1 text-[15px] md:text-[17px] font-serif text-stone-300 leading-relaxed">
+           <div key={lineIndex} className="ml-2 pl-4 border-l-2 border-amber-500/40 my-4 py-1 text-[15px] md:text-[17px] font-serif text-gray-700 leading-relaxed">
             {formatInline(line)}
           </div>
         );
       }
       if (!line.trim()) return <div key={lineIndex} className="h-3" />;
-      return <p key={lineIndex} className="mb-4 last:mb-0 leading-relaxed text-stone-200 font-serif text-[16px] md:text-[18px]">{formatInline(line)}</p>;
+       return <p key={lineIndex} className="mb-4 last:mb-0 leading-relaxed text-gray-700 font-serif text-[16px] md:text-[18px]">{formatInline(line)}</p>;
     });
   };
 
@@ -694,11 +695,11 @@ export default function ChatInterface() {
         {message.scriptures && (
           <div className="pt-6 mt-6 border-t border-amber-500/10 space-y-8 animate-fade-up">
             {message.principle && (
-              <div className="relative p-6 md:p-8 bg-amber-950/15 rounded-2xl border-l-4 border-amber-500/75 border-y border-r border-amber-500/10 shadow-inner">
-                <h4 className="text-[10px] font-black text-amber-400 uppercase tracking-widest mb-3.5 opacity-90">
+               <div className="relative p-6 md:p-8 bg-amber-50 rounded-2xl border-l-4 border-amber-500 border-y border-r border-amber-200 shadow-soft">
+                 <h4 className="text-[10px] font-black text-amber-800 uppercase tracking-widest mb-3.5">
                   Sustento Doctrinario
                 </h4>
-                <p className="text-amber-100/90 text-base md:text-lg font-serif italic leading-relaxed">
+                 <p className="text-amber-900 text-base md:text-lg font-serif italic leading-relaxed">
                   "{message.principle}"
                 </p>
               </div>
@@ -750,34 +751,33 @@ export default function ChatInterface() {
   };
 
   return (
-    <div className="h-full w-full bg-[#0d0b0a] text-stone-100 flex flex-col font-body overflow-hidden relative">
+    <div className="h-full w-full morning-bg text-gray-900 flex flex-col font-body overflow-hidden relative">
       {/* Background Decor & Warm Divine Glow */}
       <div className="fixed inset-0 bg-[url('/grid.svg')] bg-center opacity-[0.02] pointer-events-none" />
-      <div className="fixed inset-0 divine-glow pointer-events-none" />
 
       {/* Navbar Estática */}
-      <header className="h-16 md:h-20 w-full flex-shrink-0 glass-morphism border-b border-amber-500/10 px-4 md:px-6 flex items-center justify-between relative z-30 shadow-md no-print">
+      <header className="h-16 md:h-20 w-full flex-shrink-0 bg-white border-b border-gray-200 px-4 md:px-6 flex items-center justify-between relative z-30 shadow-soft no-print">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-9 h-9 md:w-11 md:h-11 bg-gradient-to-br from-amber-950/40 to-amber-900/10 rounded-lg md:rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/5 border border-amber-500/20 flex-shrink-0">
+          <div className="w-9 h-9 md:w-11 md:h-11 bg-amber-50 rounded-lg md:rounded-xl flex items-center justify-center shadow-soft border border-amber-200 flex-shrink-0">
             <EliasLogo className="w-6.5 h-6.5" />
           </div>
           <div className="min-w-0">
-            <h1 className="text-xl md:text-2xl font-heading font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-amber-200 text-glow leading-none">
+            <h1 className="text-xl md:text-2xl font-heading font-black tracking-widest gradient-text leading-none">
               ELÍAS
             </h1>
-            <p className="text-[8px] md:text-[9px] text-amber-500/80 font-bold uppercase tracking-wider md:tracking-[0.25em] mt-1 md:mt-1.5 truncate max-w-[140px] xs:max-w-none">
+            <p className="text-[8px] md:text-[9px] text-amber-700 font-bold uppercase tracking-wider md:tracking-[0.25em] mt-1 md:mt-1.5 truncate max-w-[140px] xs:max-w-none">
               Consejo y Doctrina Bíblica
             </p>
           </div>
 
           {/* Selector de Vistas - Desktop */}
-          <div className="hidden sm:flex items-center gap-2 ml-6 bg-stone-900/60 p-1 rounded-xl border border-amber-500/10 no-print">
+           <div className="hidden sm:flex items-center gap-2 ml-6 bg-amber-50 p-1 rounded-xl border border-amber-200 no-print">
             <button
               onClick={() => setActiveView('chat')}
               className={`px-3.5 py-1.5 rounded-lg text-[10px] md:text-xs font-heading font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                 activeView === 'chat'
-                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-stone-950 shadow-md shadow-amber-500/10'
-                  : 'text-stone-400 hover:text-amber-200 hover:bg-stone-850/50'
+                   ? 'text-amber-700 border-b-2 border-amber-500'
+                   : 'text-gray-500 hover:text-amber-700'
               }`}
             >
               💬 Mentor
@@ -786,8 +786,8 @@ export default function ChatInterface() {
               onClick={() => setActiveView('sunday-school')}
               className={`px-3.5 py-1.5 rounded-lg text-[10px] md:text-xs font-heading font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                 activeView === 'sunday-school'
-                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-stone-950 shadow-md shadow-amber-500/10'
-                  : 'text-stone-400 hover:text-amber-200 hover:bg-stone-850/50'
+                   ? 'text-amber-700 border-b-2 border-amber-500'
+                   : 'text-gray-500 hover:text-amber-700'
               }`}
             >
               🏫 Lección Individual
@@ -796,8 +796,8 @@ export default function ChatInterface() {
               onClick={() => setActiveView('lesson-book')}
               className={`px-3.5 py-1.5 rounded-lg text-[10px] md:text-xs font-heading font-bold uppercase tracking-wider transition-all duration-300 cursor-pointer ${
                 activeView === 'lesson-book'
-                  ? 'bg-gradient-to-br from-amber-500 to-amber-700 text-stone-950 shadow-md shadow-amber-500/10'
-                  : 'text-stone-400 hover:text-amber-200 hover:bg-stone-850/50'
+                   ? 'text-amber-700 border-b-2 border-amber-500'
+                   : 'text-gray-500 hover:text-amber-700'
               }`}
             >
               📚 Libro de Clases
@@ -808,11 +808,11 @@ export default function ChatInterface() {
         {/* Navbar Actions: Hamburger Drawer Trigger & London Badge */}
         <div className="flex items-center gap-3.5 flex-shrink-0">
           {/* Mobile Selector de Vistas */}
-          <div className="flex sm:hidden items-center gap-1 bg-stone-900/60 p-0.5 rounded-lg border border-amber-500/10 no-print">
+           <div className="flex sm:hidden items-center gap-1 bg-amber-50 p-0.5 rounded-lg border border-amber-200 no-print">
             <button
               onClick={() => setActiveView('chat')}
-              className={`px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
-                activeView === 'chat' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
+               className={`min-h-[44px] min-w-[44px] px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
+                 activeView === 'chat' ? 'bg-amber-500 text-gray-900' : 'text-gray-500'
               }`}
               title="Mentor"
             >
@@ -820,8 +820,8 @@ export default function ChatInterface() {
             </button>
             <button
               onClick={() => setActiveView('sunday-school')}
-              className={`px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
-                activeView === 'sunday-school' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
+               className={`min-h-[44px] min-w-[44px] px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
+                 activeView === 'sunday-school' ? 'bg-amber-500 text-gray-900' : 'text-gray-500'
               }`}
               title="Lección"
             >
@@ -829,23 +829,24 @@ export default function ChatInterface() {
             </button>
             <button
               onClick={() => setActiveView('lesson-book')}
-              className={`px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
-                activeView === 'lesson-book' ? 'bg-amber-500 text-stone-950' : 'text-stone-400'
+               className={`min-h-[44px] min-w-[44px] px-2 py-1 rounded text-[9px] font-heading font-bold uppercase transition-all cursor-pointer ${
+                 activeView === 'lesson-book' ? 'bg-amber-500 text-gray-900' : 'text-gray-500'
               }`}
               title="Libro"
             >
               📚
             </button>
           </div>
-          <span className="hidden lg:inline text-[10px] font-bold text-amber-400/90 border border-amber-500/20 bg-amber-950/15 px-4 py-1.5 rounded-full uppercase tracking-wider shadow-sm select-none">
+           <span className="hidden lg:inline text-[10px] font-bold text-amber-800 border border-amber-200 bg-amber-50 px-4 py-1.5 rounded-full uppercase tracking-wider shadow-soft select-none">
             Doctrina Bautista Fundamental
           </span>
           {activeView === 'chat' && (
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`w-10 h-10 flex lg:hidden items-center justify-center rounded-xl border transition-all duration-300 shadow-md active:scale-95 cursor-pointer ${isSidebarOpen
-                ? 'bg-amber-950/40 border-amber-500/50 text-amber-300 shadow-lg shadow-amber-500/10'
-                : 'bg-stone-900/60 border-amber-500/25 text-amber-400 hover:border-amber-500/40 hover:text-amber-300 shadow-md shadow-amber-500/5'
+               aria-label={isSidebarOpen ? "Ocultar Historial" : "Mostrar Historial"}
+               className={`min-h-[44px] min-w-[44px] flex lg:hidden items-center justify-center rounded-xl border transition-all duration-300 shadow-soft active:scale-95 cursor-pointer ${isSidebarOpen
+                 ? 'bg-amber-100 border-amber-500 text-amber-800'
+                 : 'bg-white border-gray-200 text-amber-700 hover:border-amber-500 hover:text-amber-800'
                 }`}
               title={isSidebarOpen ? "Ocultar Historial" : "Mostrar Historial"}
             >
@@ -873,41 +874,41 @@ export default function ChatInterface() {
 
                     {/* Brand Emblem & Welcome Title */}
                     <div className="space-y-4 max-w-xl">
-                      <div className="w-16 h-16 mx-auto bg-gradient-to-br from-amber-950/30 to-amber-900/10 rounded-full flex items-center justify-center shadow-xl shadow-amber-500/5 relative border border-amber-500/20">
-                        <div className="absolute inset-0 rounded-full bg-amber-500/5 blur-md animate-pulse" />
+                     <div className="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center shadow-soft relative border border-amber-200">
+                       <div className="absolute inset-0 rounded-full bg-amber-100 blur-md animate-pulse" />
                         <EliasLogo className="w-10 h-10 relative z-10" />
                       </div>
-                      <h2 className="text-4xl md:text-6xl font-heading text-transparent bg-clip-text bg-gradient-to-b from-amber-100 via-amber-200 to-amber-400 leading-tight tracking-tight text-glow">
+                       <h2 className="text-4xl md:text-6xl font-heading gradient-text leading-tight tracking-tight">
                         ELÍAS
                       </h2>
-                      <p className="text-xs md:text-sm font-heading text-amber-400/90 uppercase tracking-[0.25em] font-semibold mt-1">
+                       <p className="text-xs md:text-sm font-heading text-amber-800 uppercase tracking-[0.25em] font-semibold mt-1">
                         Tu Consejero Teológico y Pastoral
                       </p>
                     </div>
 
                     {/* Acronym Explainer Card */}
-                    <div className="max-w-2xl mx-auto p-8 md:p-10 rounded-3xl bg-amber-950/10 border border-amber-500/10 text-stone-300 text-sm md:text-base leading-relaxed space-y-6 shadow-2xl shadow-black/40">
-                      <div className="flex flex-wrap justify-center items-center gap-3 text-xs md:text-sm font-bold tracking-wider text-amber-300/90">
-                        <div className="px-3 py-1.5 bg-amber-950/60 border border-amber-500/20 rounded-xl flex items-center gap-1.5 shadow-sm">
-                          <span className="text-white text-base font-heading">EL</span>
-                          <span className="text-[10px] text-stone-400 font-normal font-body">Él es Dios</span>
+                     <div className="max-w-2xl mx-auto p-8 md:p-10 rounded-3xl bg-white border border-gray-200 text-gray-700 text-sm md:text-base leading-relaxed space-y-6 shadow-soft">
+                       <div className="flex flex-wrap justify-center items-center gap-3 text-xs md:text-sm font-bold tracking-wider text-amber-800">
+                         <div className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-1.5 shadow-soft">
+                           <span className="text-gray-900 text-base font-heading">EL</span>
+                           <span className="text-[10px] text-gray-600 font-normal font-body">Él es Dios</span>
                         </div>
                         <span>•</span>
-                        <div className="px-3 py-1.5 bg-amber-950/60 border border-amber-500/20 rounded-xl flex items-center gap-1.5 shadow-sm">
-                          <span className="text-white text-base font-heading">IA</span>
-                          <span className="text-[10px] text-stone-400 font-normal font-body">Inteligencia Artificial</span>
+                         <div className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-1.5 shadow-soft">
+                           <span className="text-gray-900 text-base font-heading">IA</span>
+                           <span className="text-[10px] text-gray-600 font-normal font-body">Inteligencia Artificial</span>
                         </div>
                         <span>•</span>
-                        <div className="px-3 py-1.5 bg-amber-950/60 border border-amber-500/20 rounded-xl flex items-center gap-1.5 shadow-sm">
-                          <span className="text-white text-base font-heading">S</span>
-                          <span className="text-[10px] text-stone-400 font-normal font-body">De Dios (Pertenencia)</span>
+                         <div className="px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-1.5 shadow-soft">
+                           <span className="text-gray-900 text-base font-heading">S</span>
+                           <span className="text-[10px] text-gray-600 font-normal font-body">De Dios (Pertenencia)</span>
                         </div>
                       </div>
-                      <p className="text-stone-200 font-serif leading-relaxed text-center text-base md:text-lg italic px-4">
+                       <p className="text-gray-700 font-serif leading-relaxed text-center text-base md:text-lg italic px-4">
                         "La sabiduría al servicio del Señor. Un mentor doctrinal y pastoral diseñado para guiarte en el estudio de las Escrituras, arraigado en la herencia bautista."
                       </p>
                       <div className="h-[1px] w-1/3 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent mx-auto" />
-                      <p className="text-[10px] text-amber-500/70 font-semibold text-center uppercase tracking-widest">
+                       <p className="text-[10px] text-amber-800 font-semibold text-center uppercase tracking-widest">
                         Soli Deo Gloria — La sabiduría viene de lo alto
                       </p>
                     </div>
@@ -923,10 +924,10 @@ export default function ChatInterface() {
                         <button
                           key={item.label}
                           onClick={() => handleQuickAction(item.label)}
-                          className="glass-card group relative p-4 rounded-2xl text-left flex items-center gap-4 border border-stone-800/80 shadow-md hover:shadow-lg hover:shadow-amber-500/5 duration-300 transform hover:-translate-y-0.5 cursor-pointer"
+                           className="bg-white shadow-soft hover-lift group relative p-4 rounded-2xl text-left flex items-center gap-4 border border-gray-200 duration-300 cursor-pointer min-h-[44px]"
                         >
                           <span className="text-amber-500 text-xl group-hover:scale-110 transition-transform duration-300">{item.icon}</span>
-                          <span className="text-sm font-serif font-medium text-stone-200 group-hover:text-white transition-colors tracking-wide">
+                           <span className="text-sm font-serif font-medium text-gray-700 group-hover:text-gray-900 transition-colors tracking-wide">
                             {item.label}
                           </span>
                         </button>
@@ -943,14 +944,14 @@ export default function ChatInterface() {
                   >
                     <div className="flex items-start gap-2.5 md:gap-4 w-full max-w-[98%] md:max-w-[85%]">
                       {message.role === 'assistant' && (
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-950/60 to-amber-900/30 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/5 mt-1.5 border border-amber-500/20">
+                           <div className="w-8 h-8 rounded-full bg-amber-50 flex items-center justify-center flex-shrink-0 shadow-soft mt-1.5 border border-amber-200">
                           <EliasLogo className="w-5.5 h-5.5" />
                         </div>
                       )}
                       <div
                         className={`rounded-3xl shadow-lg border border-amber-500/5 ${message.role === 'user'
-                          ? 'bubble-user rounded-tr-sm text-white py-4 px-5 md:py-6 md:px-8'
-                          : 'bubble-assistant rounded-tl-sm text-stone-100 py-4.5 px-5 md:py-8 md:px-10'
+                           ? 'bubble-user rounded-tr-sm text-white py-4 px-5 md:py-6 md:px-8'
+                           : 'bubble-assistant rounded-tl-sm text-gray-900 py-4.5 px-5 md:py-8 md:px-10'
                           }`}
                       >
                         {/* Cabecera interna del globo */}
@@ -966,7 +967,7 @@ export default function ChatInterface() {
                         {/* Contenido del globo */}
                         <div className="leading-relaxed">
                           {message.role === 'assistant' ? renderMessageContent(message) : (
-                            <p className="font-serif italic text-stone-100 text-[16px] md:text-[18px] leading-relaxed">"{message.content}"</p>
+                             <p className="font-serif italic text-white text-[16px] md:text-[18px] leading-relaxed">"{message.content}"</p>
                           )}
                         </div>
 
@@ -1016,23 +1017,23 @@ export default function ChatInterface() {
           </main>
 
           {/* Footer Flotante */}
-          <footer className="w-full flex-shrink-0 glass-morphism border-t border-amber-500/10 px-6 pt-4 pb-8 md:pb-10 relative z-50 shadow-inner">
+          <footer className="w-full flex-shrink-0 bg-white border-t border-gray-200 px-4 md:px-6 pt-4 pb-20 md:pb-10 relative z-50 shadow-soft">
             <div className="max-w-3xl mx-auto">
               <form onSubmit={handleSubmit} className="relative group">
-                <div className="bg-stone-900/40 rounded-xl md:rounded-2xl p-2 flex items-center gap-3.5 border border-stone-800/80 focus-within:border-amber-500/35 focus-within:bg-stone-900/70 transition-all duration-300 shadow-md">
+                <div className="bg-white rounded-xl md:rounded-2xl p-2 flex items-center gap-3.5 border border-gray-200 focus-within:border-amber-500 focus-within:ring-2 focus-within:ring-amber-200 transition-all duration-300 shadow-soft">
                   <input
                     ref={inputRef}
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Escudriña las Escrituras o consulta una doctrina..."
-                    className="flex-1 px-4 py-3 bg-transparent text-white placeholder-stone-500 focus:outline-none text-sm md:text-base font-serif"
+                    className="flex-1 px-4 py-3 bg-transparent text-gray-900 placeholder-gray-500 focus:outline-none text-sm md:text-base font-serif min-h-[44px]"
                     disabled={isLoading}
                   />
                   <button
                     type="submit"
                     disabled={!input.trim() || isLoading}
-                    className="flex items-center justify-center w-11 h-11 md:w-13 md:h-13 bg-gradient-to-br from-amber-500 to-amber-700 rounded-lg md:rounded-xl text-stone-950 disabled:opacity-30 disabled:grayscale hover:scale-105 active:scale-95 transition-all duration-300 shadow-xl shadow-amber-500/20 border border-amber-400/20 flex-shrink-0 cursor-pointer"
+                    className="flex items-center justify-center min-h-[44px] min-w-[44px] bg-gradient-to-br from-amber-500 to-amber-400 rounded-lg md:rounded-xl text-gray-900 disabled:opacity-30 disabled:grayscale hover:scale-105 active:scale-95 transition-all duration-300 shadow-soft border border-amber-300 flex-shrink-0 cursor-pointer"
                   >
                     {isLoading ? (
                       <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-stone-950/30 border-t-stone-950 rounded-full animate-spin" />
@@ -1061,19 +1062,20 @@ export default function ChatInterface() {
 
         {/* Lado Derecho: Sidebar de Pergaminos (ChatGPT-style drawer) */}
         <aside
-          className={`fixed inset-y-0 right-0 z-50 w-[280px] bg-[#12100e] border-l border-amber-500/10 flex flex-col shadow-2xl transition-transform duration-300 ease-out lg:relative lg:translate-x-0 lg:w-[300px] lg:z-20 ${isSidebarOpen ? 'translate-x-0' : 'translate-x-full'
+          className={`fixed inset-y-0 left-0 z-50 w-[min(20rem,90vw)] bg-white border-r border-gray-200 flex flex-col shadow-elevated transition-transform duration-300 ease-out lg:relative lg:order-first lg:translate-x-0 lg:w-[300px] lg:z-20 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
             }`}
         >
           {/* Header del Sidebar */}
-          <div className="p-5 border-b border-amber-500/10 flex items-center justify-between flex-shrink-0 bg-[#0d0b0a]/80">
+           <div className="p-5 border-b border-gray-200 flex items-center justify-between flex-shrink-0 bg-white">
             <div className="flex items-center gap-2">
               <span className="text-amber-500 text-sm">📜</span>
               <h3 className="text-xs font-heading font-black tracking-widest text-amber-400 uppercase">FUNDAMENTOS BÍBLICOS</h3>
             </div>
             {/* Botón de cierre visible solo en móviles */}
-            <button
-              onClick={() => setIsSidebarOpen(false)}
-              className="lg:hidden text-stone-400 hover:text-white cursor-pointer"
+             <button
+               onClick={() => setIsSidebarOpen(false)}
+               aria-label="Cerrar historial"
+               className="lg:hidden min-h-[44px] min-w-[44px] text-gray-500 hover:text-amber-700 flex items-center justify-center cursor-pointer"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -1082,23 +1084,23 @@ export default function ChatInterface() {
           </div>
 
           {/* Selector de Pestañas */}
-          <div className="flex border-b border-amber-500/10 bg-[#0d0b0a]/40 text-[10px] font-heading font-bold uppercase tracking-wider">
+           <div className="flex border-b border-gray-200 bg-white text-[10px] font-heading font-bold uppercase tracking-wider">
             <button
               onClick={() => setActiveTab('history')}
-              className={`flex-1 py-3 text-center transition-all border-b-2 cursor-pointer ${
+               className={`flex-1 min-h-[44px] py-3 text-center transition-all border-b-2 cursor-pointer ${
                 activeTab === 'history'
-                  ? 'border-amber-500 text-amber-300 bg-amber-950/5'
-                  : 'border-transparent text-stone-500 hover:text-stone-300'
+                   ? 'border-amber-500 text-amber-800 bg-amber-50'
+                   : 'border-transparent text-gray-500 hover:text-amber-700'
               }`}
             >
               Estudios
             </button>
             <button
               onClick={() => setActiveTab('confession')}
-              className={`flex-1 py-3 text-center transition-all border-b-2 cursor-pointer ${
+               className={`flex-1 min-h-[44px] py-3 text-center transition-all border-b-2 cursor-pointer ${
                 activeTab === 'confession'
-                  ? 'border-amber-500 text-amber-300 bg-amber-950/5'
-                  : 'border-transparent text-stone-500 hover:text-stone-300'
+                   ? 'border-amber-500 text-amber-800 bg-amber-50'
+                   : 'border-transparent text-gray-500 hover:text-amber-700'
               }`}
             >
               Fundamentos
@@ -1111,7 +1113,7 @@ export default function ChatInterface() {
               <div className="p-4 flex-shrink-0">
                 <button
                   onClick={handleNewChat}
-                  className="w-full flex items-center justify-center gap-2.5 py-3 px-4 bg-gradient-to-r from-amber-950/40 to-amber-900/10 hover:from-amber-950/60 hover:to-amber-900/30 border border-amber-500/20 hover:border-amber-400/40 rounded-xl text-xs font-bold text-amber-300 hover:text-amber-200 transition-all duration-300 shadow-md active:scale-98 cursor-pointer"
+                   className="w-full min-h-[44px] flex items-center justify-center gap-2.5 py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 border border-amber-300 rounded-xl text-xs font-bold text-gray-900 transition-all duration-300 shadow-soft active:scale-98 cursor-pointer"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -1136,19 +1138,19 @@ export default function ChatInterface() {
                       <div
                         key={session.id}
                         onClick={() => handleSelectSession(session.id)}
-                        className={`group relative w-full flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all duration-300 hover:bg-stone-900/40 ${isActive
-                          ? 'bg-amber-950/15 border-amber-500/30 shadow-md shadow-amber-500/5'
-                          : 'bg-stone-900/10 border-stone-900/80 hover:border-amber-500/10'
+                        className={`group relative w-full flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all duration-300 shadow-soft hover-lift min-h-[44px] ${isActive
+                           ? 'bg-amber-50 border-l-4 border-l-amber-500 border-gray-200'
+                           : 'bg-white border-gray-200 hover:border-amber-200'
                           }`}
                       >
                         <div className="flex items-center gap-3.5 min-w-0 pr-6">
-                          <span className={`text-sm transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-amber-400' : 'text-stone-500 group-hover:text-amber-500/70'}`}>
+                           <span className={`text-sm transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-amber-700' : 'text-gray-500 group-hover:text-amber-700'}`}>
                             📖
                           </span>
                           <div className="flex flex-col min-w-0">
                             <span className={`text-[13px] font-medium truncate tracking-wide leading-snug transition-colors ${isActive
-                              ? 'text-amber-200 font-semibold font-serif'
-                              : 'text-stone-300 group-hover:text-stone-100 font-serif'
+                               ? 'text-amber-800 font-semibold font-serif'
+                               : 'text-gray-700 group-hover:text-gray-900 font-serif'
                               }`}>
                               {session.title}
                             </span>
@@ -1159,9 +1161,10 @@ export default function ChatInterface() {
                         </div>
 
                         {/* Botón de eliminar (Papelera) */}
-                        <button
-                          onClick={(e) => handleDeleteSession(session.id, e)}
-                          className="absolute right-3.5 opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 text-stone-500 hover:text-red-400 hover:bg-red-950/20 rounded-lg transition-all duration-200 cursor-pointer"
+                         <button
+                           onClick={(e) => handleDeleteSession(session.id, e)}
+                           aria-label={`Eliminar ${session.title}`}
+                           className="absolute right-3.5 min-h-[44px] min-w-[44px] opacity-60 group-hover:opacity-100 focus:opacity-100 p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center"
                           title="Eliminar consulta"
                         >
                           <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1181,12 +1184,12 @@ export default function ChatInterface() {
                 <p className="text-[9px] text-stone-500 font-serif italic mb-2.5 px-1 leading-snug">
                   Artículos basados en la histórica Confesión de Fe de 1689
                 </p>
-                <input
+                 <input
                   type="text"
                   placeholder="Buscar capítulo o doctrina..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-3 py-2 bg-stone-900/60 border border-stone-850 rounded-xl text-xs placeholder-stone-500 text-stone-200 focus:outline-none focus:border-amber-500/30 transition-all font-serif"
+                   className="w-full min-h-[44px] px-3 py-2 bg-white border border-gray-200 rounded-xl text-xs placeholder-gray-500 text-gray-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-100 transition-all font-serif"
                 />
               </div>
               {/* Listado de Capítulos de la Confesión */}
@@ -1194,7 +1197,7 @@ export default function ChatInterface() {
                 {filteredChapters.map((ch) => (
                   <div 
                     key={ch.number} 
-                    className="p-4 bg-stone-900/25 border border-stone-850 rounded-2xl space-y-2.5 hover:border-amber-500/10 hover:bg-stone-900/40 transition-all duration-300 shadow-sm"
+                         className="p-4 bg-white border border-gray-200 rounded-2xl space-y-2.5 hover:border-amber-300 hover-lift transition-all duration-300 shadow-soft"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest font-heading">
@@ -1214,7 +1217,7 @@ export default function ChatInterface() {
                         <button
                           key={idx}
                           onClick={() => handleOpenVerse(scr)}
-                          className="inline-flex items-center px-2 py-1 bg-amber-950/20 border border-amber-500/10 rounded-lg text-[9px] font-serif text-amber-300/90 hover:bg-amber-950/45 hover:border-amber-500/20 transition-all cursor-pointer hover:scale-[1.02]"
+                         className="inline-flex items-center min-h-[44px] px-2 py-1 bg-amber-50 border border-amber-200 rounded-lg text-[9px] font-serif text-amber-800 hover:bg-amber-100 hover:border-amber-500 transition-all cursor-pointer hover:scale-[1.02]"
                         >
                           📖 {scr}
                         </button>
@@ -1234,7 +1237,7 @@ export default function ChatInterface() {
                           setIsSidebarOpen(false);
                         }
                       }}
-                      className="w-full py-2 bg-amber-500/5 hover:bg-amber-500/15 border border-amber-500/10 hover:border-amber-500/30 rounded-xl text-[10px] font-bold text-amber-300 hover:text-amber-200 transition-all cursor-pointer font-heading tracking-widest uppercase mt-2.5 text-center shadow-inner"
+                       className="w-full min-h-[44px] py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 hover:border-amber-500 rounded-xl text-[10px] font-bold text-amber-800 hover:text-amber-900 transition-all cursor-pointer font-heading tracking-widest uppercase mt-2.5 text-center shadow-soft"
                     >
                       Estudiar con Elías
                     </button>
@@ -1276,16 +1279,16 @@ export default function ChatInterface() {
 
       {/* Modal / Overlay del Lector Bíblico */}
       {activeVerseRef && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-up"
+         <div
+           className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-md animate-fade-up"
           onClick={() => setActiveVerseRef(null)}
         >
           <div 
-            className="w-full max-w-lg bg-[#12100e] border border-amber-500/20 rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]"
+             className="w-full max-w-lg bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-elevated flex flex-col max-h-[85vh]"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Cabecera del Modal */}
-            <div className="p-5 border-b border-amber-500/10 flex items-center justify-between bg-stone-950/40">
+             <div className="p-5 border-b border-gray-200 flex items-center justify-between bg-white">
               <div className="flex items-center gap-3">
                 <span className="text-amber-500 text-lg">📖</span>
                 <div>
@@ -1297,9 +1300,10 @@ export default function ChatInterface() {
                   </p>
                 </div>
               </div>
-              <button 
-                onClick={() => setActiveVerseRef(null)}
-                className="w-8 h-8 rounded-full bg-stone-900 border border-stone-850 flex items-center justify-center text-stone-400 hover:text-white hover:border-amber-500/30 transition-colors cursor-pointer"
+                 <button
+                 onClick={() => setActiveVerseRef(null)}
+                 aria-label="Cerrar lectura bíblica"
+                 className="min-h-[44px] min-w-[44px] rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 hover:text-amber-900 hover:border-amber-500 transition-colors cursor-pointer"
               >
                 ✕
               </button>
@@ -1334,9 +1338,9 @@ export default function ChatInterface() {
                   <h4 className="text-lg font-heading text-amber-300 font-bold mb-4 text-center">
                     {verseContent.reference}
                   </h4>
-                  <div className="space-y-4 pl-4 border-l-2 border-amber-500/20 py-1">
+                   <div className="space-y-4 pl-4 border-l-4 border-amber-500 bg-amber-50 rounded-lg p-4 py-3">
                     {verseContent.verses.map((v) => (
-                      <p key={v.number} className="text-stone-200 font-serif text-base md:text-lg leading-relaxed">
+                       <p key={v.number} className="text-amber-900 font-serif text-base md:text-lg leading-relaxed">
                         <sup className="text-amber-500 font-bold mr-1.5 text-xs">{v.number}</sup>
                         {v.text}
                       </p>
@@ -1347,7 +1351,7 @@ export default function ChatInterface() {
             </div>
             
             {/* Footer del Modal */}
-            <div className="p-4 border-t border-amber-500/10 bg-stone-950/20 flex justify-end gap-3">
+             <div className="p-4 border-t border-gray-200 bg-white flex justify-end gap-3">
               {verseContent && (
                 <button
                   onClick={() => {
@@ -1355,14 +1359,14 @@ export default function ChatInterface() {
                     navigator.clipboard.writeText(`"${textToCopy}" (${verseContent.reference} RVR1960)`);
                     alert("Versículo copiado al portapapeles");
                   }}
-                  className="px-4 py-2 bg-stone-900 border border-stone-850 hover:border-amber-500/20 rounded-xl text-xs font-bold text-stone-300 hover:text-white transition-all cursor-pointer"
+                   className="min-h-[44px] px-4 py-2 bg-white border border-gray-200 hover:border-amber-500 rounded-xl text-xs font-bold text-gray-700 hover:text-gray-900 transition-all cursor-pointer"
                 >
                   📋 Copiar Versículo
                 </button>
               )}
               <button
                 onClick={() => setActiveVerseRef(null)}
-                className="px-4 py-2 bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 rounded-xl text-xs font-bold text-stone-950 transition-all cursor-pointer shadow-md shadow-amber-500/15"
+                 className="min-h-[44px] px-4 py-2 bg-gradient-to-br from-amber-500 to-amber-400 hover:from-amber-600 hover:to-amber-500 rounded-xl text-xs font-bold text-gray-900 transition-all cursor-pointer shadow-soft"
               >
                 Cerrar
               </button>
