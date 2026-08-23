@@ -221,8 +221,8 @@ const COLOR_THEMES = {
   },
   solemn: {
     name: 'Solemne / Sagrado',
-    primary: '#dfb15b',
-    primaryDark: '#b88a3e',
+    primary: '#b45309',
+    primaryDark: '#92400e',
     primaryText: '#78561d',
     bgLight: '#faf9f6',
     accent: '#292524',
@@ -1352,21 +1352,21 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
   };
 
   return (
-    <div className="flex-1 w-full flex flex-col lg:flex-row overflow-hidden relative">
+    <div className="flex-1 w-full flex flex-col lg:flex-row gap-6 overflow-y-auto relative morning-bg p-4 sm:p-6">
       {/* Configuration Panel */}
-      <div className="w-full lg:w-[360px] bg-[#12100e]/95 border-b lg:border-b-0 lg:border-r border-amber-500/10 p-6 flex flex-col overflow-y-auto chat-scroll no-print flex-shrink-0">
-        <div className="flex items-center gap-2 mb-6 border-b border-amber-500/10 pb-3">
-          <span className="text-amber-500 text-lg">🏫</span>
-          <h3 className="text-sm font-heading font-black tracking-widest text-amber-400 uppercase">Folleto Dominical</h3>
+      <div className="w-full lg:w-[360px] bg-white shadow-soft rounded-2xl p-5 sm:p-6 flex flex-col overflow-y-auto chat-scroll no-print flex-shrink-0 max-h-[calc(100vh-120px)] lg:max-h-none">
+        <div className="flex items-center gap-2 mb-6 border-b border-gray-200 pb-3">
+          <span className="text-[#f59e0b] text-lg">🏫</span>
+          <h3 className="text-sm font-heading font-black tracking-widest text-gray-900 uppercase">Folleto Dominical</h3>
         </div>
 
         <form onSubmit={handleGenerate} className="space-y-5">
           <div className="space-y-2">
-            <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Grupo de Edad</label>
+            <label className="block text-sm font-medium text-gray-900">Grupo de Edad</label>
             <select
               value={ageGroup}
               onChange={(e) => setAgeGroup(e.target.value)}
-              className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all cursor-pointer"
+              className="w-full min-h-[44px] px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#f59e0b] focus:border-transparent font-body text-sm transition-all cursor-pointer"
             >
               <option value="Cunas (0-3 años)">Cunas (0-3 años)</option>
               <option value="Principiantes (4-6 años)">Principiantes (4-6 años)</option>
@@ -1377,11 +1377,11 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Tipo de Recurso</label>
+            <label className="block text-sm font-medium text-gray-900">Tipo de Recurso</label>
             <select
               value={resourceType}
               onChange={(e) => setResourceType(e.target.value)}
-              className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all cursor-pointer"
+              className="w-full min-h-[44px] px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#f59e0b] focus:border-transparent font-body text-sm transition-all cursor-pointer"
             >
               <option value="Lección Completa / Guía del Maestro">Lección Completa</option>
               <option value="Actividades y Dinámicas">Actividades y Dinámicas</option>
@@ -1391,38 +1391,38 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Tema o Pasaje Bíblico</label>
+            <label className="block text-sm font-medium text-gray-900">Tema o Pasaje Bíblico</label>
             <input
               type="text"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="Ej: Daniel en el foso de los leones"
-              className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all"
+              className="w-full min-h-[44px] px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f59e0b] focus:border-transparent font-body text-sm transition-all"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Enfoque Personalizado (Opcional)</label>
+            <label className="block text-sm font-medium text-gray-900">Enfoque Personalizado (Opcional)</label>
             <textarea
               value={customDetails}
               onChange={(e) => setCustomDetails(e.target.value)}
               placeholder="Ej: Enfatizar la soberanía divina y confianza..."
               rows={4}
-              className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all resize-none"
+              className="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f59e0b] focus:border-transparent font-body text-sm transition-all resize-none"
             />
           </div>
 
-          <div className="border-t border-amber-500/10 pt-4 mt-2 space-y-4">
-            <h4 className="text-[11px] font-bold font-heading text-amber-400 uppercase tracking-widest mb-2">Opciones de Diseño</h4>
+          <div className="border-t border-gray-200 pt-4 mt-2 space-y-4">
+            <h4 className="text-[11px] font-bold font-heading text-[#b45309] uppercase tracking-widest mb-2">Opciones de Diseño</h4>
 
             {/* Color Theme Selector */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Tema de Color</label>
+              <label className="block text-sm font-medium text-gray-900">Tema de Color</label>
               <select
                 value={colorTheme}
                 onChange={(e) => setColorTheme(e.target.value as any)}
-                className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all cursor-pointer"
+                className="w-full min-h-[44px] px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#f59e0b] focus:border-transparent font-body text-sm transition-all cursor-pointer"
               >
                 {Object.entries(COLOR_THEMES).map(([key, t]) => (
                   <option key={key} value={key}>{t.name}</option>
@@ -1432,11 +1432,11 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
 
             {/* Font Size Selector */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Tamaño de Letra</label>
+              <label className="block text-sm font-medium text-gray-900">Tamaño de Letra</label>
               <select
                 value={fontSize}
                 onChange={(e) => setFontSize(e.target.value as any)}
-                className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all cursor-pointer"
+                className="w-full min-h-[44px] px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#f59e0b] focus:border-transparent font-body text-sm transition-all cursor-pointer"
               >
                 <option value="compact">Compacto (Pequeño)</option>
                 <option value="standard">Estándar (Mediano)</option>
@@ -1446,11 +1446,11 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
 
             {/* Print Margins Selector */}
             <div className="space-y-2">
-              <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Márgenes de Impresión</label>
+              <label className="block text-sm font-medium text-gray-900">Márgenes de Impresión</label>
               <select
                 value={printMargin}
                 onChange={(e) => setPrintMargin(e.target.value as any)}
-                className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all cursor-pointer"
+                className="w-full min-h-[44px] px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-[#f59e0b] focus:border-transparent font-body text-sm transition-all cursor-pointer"
               >
                 <option value="standard">Estándar (0.4in)</option>
                 <option value="compact">Económico (0.25in)</option>
@@ -1460,13 +1460,13 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
 
             {/* Custom Header Text */}
             <div className="space-y-2 pb-2">
-              <label className="text-[10px] font-bold font-heading text-stone-400 uppercase tracking-wider">Encabezado Personalizado</label>
+              <label className="block text-sm font-medium text-gray-900">Encabezado Personalizado</label>
               <input
                 type="text"
                 value={customHeader}
                 onChange={(e) => setCustomHeader(e.target.value)}
                 placeholder="Ej: Iglesia Bautista de la Gracia"
-                className="w-full px-4 py-2.5 bg-stone-900/60 border border-stone-850 rounded-xl text-stone-200 focus:outline-none focus:border-amber-500/40 font-serif text-sm transition-all"
+                className="w-full min-h-[44px] px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#f59e0b] focus:border-transparent font-body text-sm transition-all"
               />
             </div>
           </div>
@@ -1474,7 +1474,7 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
           <button
             type="submit"
             disabled={isGenerating || !topic.trim()}
-            className="w-full py-3 bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 rounded-xl text-stone-950 font-bold font-heading uppercase tracking-wider transition-all duration-300 disabled:opacity-40 shadow-lg shadow-amber-500/10 cursor-pointer text-center"
+            className="hover-lift w-full min-h-[44px] py-3 bg-gradient-to-br from-[#b45309] to-[#f59e0b] hover:from-[#92400e] hover:to-[#d97706] rounded-xl text-gray-900 font-medium font-heading uppercase tracking-wider transition-all duration-300 disabled:opacity-40 shadow-soft cursor-pointer text-center"
           >
             {isGenerating ? 'Generando Material...' : 'Generar Material'}
           </button>
@@ -1482,19 +1482,19 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
       </div>
 
       {/* Preview and Action toolbar */}
-      <div className="flex-1 bg-[#0d0b0a]/40 flex flex-col overflow-hidden relative">
+      <div className="flex-1 min-w-0 bg-transparent flex flex-col overflow-hidden relative">
         
         {/* Barra de Progreso de Generación (streaming) */}
         {generationStatus === 'generating' && (
-          <div className="w-full bg-stone-900/80 border-b border-amber-500/20 px-6 py-3 flex items-center gap-3 animate-pulse">
-            <div className="w-5 h-5 border-2 border-amber-500/30 border-t-amber-400 rounded-full animate-spin flex-shrink-0" />
+          <div className="w-full bg-white shadow-soft rounded-2xl px-5 py-4 flex items-center gap-3 animate-pulse mb-4">
+            <div className="w-5 h-5 border-2 border-[#fbbf24]/30 border-t-[#f59e0b] rounded-full animate-spin flex-shrink-0" />
             <div className="flex-1 flex flex-col gap-1">
-              <div className="flex justify-between text-xs font-bold font-heading text-amber-400 uppercase tracking-wider">
+              <div className="flex justify-between text-xs font-bold font-heading text-gray-900 uppercase tracking-wider">
                 <span>Generando Material... ({streamProgress}%)</span>
               </div>
-              <div className="w-full h-1.5 bg-stone-800 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-amber-400 to-amber-600 transition-all duration-300 ease-out"
+                  className="h-full bg-gradient-to-r from-[#f59e0b] to-[#fbbf24] transition-all duration-300 ease-out"
                   style={{ width: `${streamProgress}%` }}
                 />
               </div>
@@ -1502,17 +1502,18 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
           </div>
         )}
         {generationStatus === 'finalized' && (
-          <div className="w-full bg-green-900/30 border-b border-green-500/20 px-6 py-3 flex items-center gap-3">
-            <span className="text-green-400 text-lg">✓</span>
-            <span className="text-xs font-bold font-heading text-green-400 uppercase tracking-wider">
+          <div className="w-full bg-white shadow-soft rounded-2xl px-5 py-4 flex items-center gap-3 mb-4">
+            <span className="text-green-600 text-lg">✓</span>
+            <span className="text-xs font-bold font-heading text-gray-900 uppercase tracking-wider">
               Generación Completada — Folleto Listo para Descargar
             </span>
           </div>
         )}
 
-        <div className="h-14 border-b border-amber-500/10 px-6 flex items-center justify-between bg-stone-950/20 no-print flex-shrink-0">
-          <span className="text-xs text-stone-400 font-serif">Maquetación del Folleto Dominical</span>
-          <div className="flex items-center gap-3">
+        <div className="bg-white shadow-soft rounded-2xl p-4 mb-4 overflow-x-auto no-print flex-shrink-0">
+          <div className="flex items-center justify-between gap-4 min-w-max">
+          <span className="text-xs text-gray-600 font-body">Maquetación del Folleto Dominical</span>
+          <div className="flex items-center gap-2">
             {generatedResource && (
               <>
                 <button
@@ -1521,24 +1522,25 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  className="px-3.5 py-1.5 bg-stone-900/60 border border-stone-850 rounded-xl text-[10px] font-bold text-stone-300 hover:text-white transition-all cursor-pointer font-heading uppercase tracking-wider"
+                  className="hover-lift min-h-[44px] px-4 py-2 text-[#b45309] hover:bg-gray-50 rounded-lg text-[10px] font-bold transition-all cursor-pointer font-heading uppercase tracking-wider"
                 >
                   {copied ? '✓ Copiado' : '📋 Copiar Código'}
                 </button>
                 <button
                   onClick={downloadPDF}
                   disabled={isDownloading}
-                  className="px-3.5 py-1.5 bg-gradient-to-br from-amber-500 to-amber-700 hover:from-amber-400 hover:to-amber-600 rounded-xl text-[10px] font-bold text-stone-950 transition-all cursor-pointer shadow-md shadow-amber-500/15 font-heading uppercase tracking-wider disabled:opacity-50"
+                  className="hover-lift min-h-[44px] px-4 py-2 bg-gradient-to-br from-[#b45309] to-[#f59e0b] hover:from-[#92400e] hover:to-[#d97706] rounded-xl text-[10px] font-bold text-gray-900 transition-all cursor-pointer shadow-soft font-heading uppercase tracking-wider disabled:opacity-50"
                 >
                   {isDownloading ? 'Generando PDF...' : '🖨️ Descargar PDF'}
                 </button>
               </>
             )}
           </div>
+          </div>
         </div>
 
         {/* Folleto Canvas Wrapper */}
-        <div className="flex-1 overflow-y-auto chat-scroll p-6 md:p-10 flex justify-center bg-[#0d0b0a]/60 relative">
+        <div className="flex-1 overflow-y-auto chat-scroll p-2 sm:p-6 md:p-10 flex justify-center bg-transparent relative">
           <div className="w-full max-w-[8.5in]">
             {generatedResource ? (
               <div 
@@ -1951,12 +1953,19 @@ export default function SundaySchoolGenerator({ formatContent: _formatContent }:
                 </div>
 
               ) : (
-              <div className="h-full flex flex-col items-center justify-center text-center p-12 space-y-4 opacity-40 bg-[#12100e]/30 rounded-3xl border border-stone-800/80">
-                <span className="text-5xl">📚</span>
-                <h3 className="text-lg font-heading text-[#dfb15b] font-bold">Plantilla de Folleto Dominical</h3>
-                <p className="text-sm font-serif text-[#78716c] max-w-md">
+              <div className="morning-bg rounded-2xl p-8 sm:p-12 text-center space-y-4 shadow-soft">
+                <svg className="w-16 h-16 mx-auto text-[#f59e0b] mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  <path d="M6 6h10M6 10h10M6 14h6" />
+                </svg>
+                <h3 className="text-2xl font-heading gradient-text font-bold">Crea tu primera lección</h3>
+                <p className="text-sm font-body text-gray-600 max-w-md mx-auto">
                   Configura los detalles en el panel izquierdo y presiona "Generar Material" para crear un folleto dominical estructurado con dinámicas, versículos y lecciones listo para imprimir.
                 </p>
+                <button type="button" onClick={() => document.querySelector<HTMLInputElement>('input[placeholder^="Ej: Daniel"]')?.focus()} className="hover-lift min-h-[44px] bg-gradient-to-br from-[#b45309] to-[#f59e0b] text-gray-900 font-medium px-6 py-3 rounded-xl shadow-soft">
+                  Comenzar
+                </button>
               </div>
             )}
           </div>

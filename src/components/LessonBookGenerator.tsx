@@ -49,8 +49,8 @@ const COLOR_THEMES = {
   },
   solemn: {
     name: 'Solemne / Sagrado',
-    primary: '#dfb15b',
-    primaryDark: '#b88a3e',
+    primary: '#b45309',
+    primaryDark: '#92400e',
     primaryText: '#78561d',
     bgLight: '#faf9f6',
     accent: '#292524',
@@ -912,13 +912,13 @@ export default function LessonBookGenerator() {
 
   return (
     <div className="flex-1 w-full overflow-y-auto chat-scroll h-full">
-      <div className="w-full max-w-7xl mx-auto p-4 md:p-8 text-[#f5f5f4] flex flex-col space-y-6">
+      <div className="w-full max-w-7xl mx-auto p-4 md:p-8 text-text-primary flex flex-col space-y-6">
       
       {/* HEADER SECTION */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-stone-800 pb-6 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-border pb-6 gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-heading font-bold text-[#dfb15b]">Libro de Clases Dominical</h1>
-          <p className="text-sm font-serif text-[#78716c] mt-2 max-w-2xl">
+          <h1 className="text-3xl md:text-4xl font-heading font-bold gradient-text">Libro de Clases Dominical</h1>
+          <p className="text-sm font-serif text-text-secondary mt-2 max-w-2xl">
             Genera trimestres o series curriculares bíblicas completas mediante planificación inicial. 
             Previene timeouts dividiendo la generación por lección y compila un PDF consolidado.
           </p>
@@ -927,7 +927,7 @@ export default function LessonBookGenerator() {
           {step > 1 && (
             <button
               onClick={() => { setStep(1); setActiveSession(null); }}
-              className="bg-stone-900 border border-stone-700 hover:border-[#dfb15b] hover:text-[#dfb15b] transition-all px-4 py-2 rounded-xl text-sm font-body cursor-pointer"
+              className="hover-lift bg-gradient-to-br from-primary to-accent text-gray-900 transition-all px-4 py-3 min-h-[44px] rounded-xl text-sm font-body cursor-pointer shadow-soft"
             >
               Nuevo Libro
             </button>
@@ -939,13 +939,13 @@ export default function LessonBookGenerator() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
         {/* SIDEBAR: Saved sessions / Params */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="w-full lg:col-span-3 space-y-6">
           
           {/* Previous sessions list */}
-          <div className="bg-stone-950/50 border border-stone-800/80 rounded-3xl p-6 space-y-4">
-            <h3 className="text-sm font-heading text-[#dfb15b] font-bold tracking-wider uppercase">Libros Guardados</h3>
+          <div className="bg-white shadow-soft border border-border rounded-2xl p-6 space-y-4">
+            <h3 className="text-sm font-heading text-primary-dark font-bold tracking-wider uppercase">Libros Guardados</h3>
             {sessions.length === 0 ? (
-              <p className="text-xs font-serif text-[#78716c] italic">No hay libros generados aún.</p>
+              <p className="text-xs font-serif text-text-secondary italic">No hay libros generados aún.</p>
             ) : (
               <div className="flex flex-col space-y-2 max-h-60 overflow-y-auto chat-scroll pr-1">
                 {sessions.map(s => (
@@ -954,17 +954,17 @@ export default function LessonBookGenerator() {
                     onClick={() => handleLoadSession(s)}
                     className={`flex justify-between items-center p-3 rounded-xl border text-xs cursor-pointer transition-all ${
                       activeSession?.id === s.id
-                        ? 'bg-[#dfb15b]/10 border-[#dfb15b] text-[#dfb15b]'
-                        : 'bg-stone-900/40 border-stone-800 hover:bg-stone-900/80 text-stone-300'
+                         ? 'bg-amber-50 border-primary text-primary-dark'
+                         : 'bg-surface-warm border-border hover:border-primary text-text-secondary'
                     }`}
                   >
                     <div className="flex flex-col truncate pr-2">
                       <span className="font-bold truncate">{s.title}</span>
-                      <span className="text-[10px] text-[#78716c] mt-1">{s.ageGroup} • {s.lessonCount} clases</span>
+                      <span className="text-[10px] text-text-secondary mt-1">{s.ageGroup} • {s.lessonCount} clases</span>
                     </div>
                     <button
                       onClick={(e) => handleDeleteSession(e, s.id)}
-                      className="text-[#78716c] hover:text-red-500 transition-colors p-1"
+                       className="text-text-secondary hover:text-red-600 transition-colors p-2 min-h-[44px] min-w-[44px]"
                       title="Eliminar sesión"
                     >
                       🗑️
@@ -977,26 +977,26 @@ export default function LessonBookGenerator() {
 
           {/* Layout customizations (Only active in Step 4) */}
           {step === 4 && activeSession && (
-            <div className="bg-stone-950/50 border border-stone-800/80 rounded-3xl p-6 space-y-5">
-              <h3 className="text-sm font-heading text-[#dfb15b] font-bold tracking-wider uppercase">Diseño de Impresión</h3>
+            <div className="bg-white shadow-soft border border-border rounded-2xl p-6 space-y-5">
+              <h3 className="text-sm font-heading text-primary-dark font-bold tracking-wider uppercase">Diseño de Impresión</h3>
               
               <div className="space-y-2">
-                <label className="text-xs text-[#78716c] block font-bold">Encabezado Personalizado</label>
+                <label className="text-xs text-text-primary block font-bold">Encabezado Personalizado</label>
                 <input
                   type="text"
                   placeholder="Ej: Iglesia Bautista Fundamental"
                   value={customHeader}
                   onChange={(e) => setCustomHeader(e.target.value)}
-                  className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-200 outline-none focus:border-[#dfb15b]"
+                  className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-2 text-xs text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-[#78716c] block font-bold">Tema de Color</label>
+                <label className="text-xs text-text-primary block font-bold">Tema de Color</label>
                 <select
                   value={colorTheme}
                   onChange={(e) => setColorTheme(e.target.value as any)}
-                  className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-200 outline-none focus:border-[#dfb15b] cursor-pointer"
+                  className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-2 text-xs text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
                 >
                   <option value="solemn">Solemne / Sagrado (Oro)</option>
                   <option value="vibrant">Alegre / Infantil (Rojo)</option>
@@ -1006,11 +1006,11 @@ export default function LessonBookGenerator() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-[#78716c] block font-bold">Tamaño de Letra</label>
+                <label className="text-xs text-text-primary block font-bold">Tamaño de Letra</label>
                 <select
                   value={fontSize}
                   onChange={(e) => setFontSize(e.target.value as any)}
-                  className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-200 outline-none focus:border-[#dfb15b] cursor-pointer"
+                  className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-2 text-xs text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
                 >
                   <option value="compact">Compacto (Ahorra espacio)</option>
                   <option value="standard">Estándar (Recomendado)</option>
@@ -1019,11 +1019,11 @@ export default function LessonBookGenerator() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs text-[#78716c] block font-bold">Márgenes Físicos A4</label>
+                <label className="text-xs text-text-primary block font-bold">Márgenes Físicos A4</label>
                 <select
                   value={printMargin}
                   onChange={(e) => setPrintMargin(e.target.value as any)}
-                  className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3 py-2 text-xs text-stone-200 outline-none focus:border-[#dfb15b] cursor-pointer"
+                  className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-2 text-xs text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
                 >
                   <option value="compact">Estrecho (12mm)</option>
                   <option value="standard">Normal (18mm)</option>
@@ -1034,7 +1034,7 @@ export default function LessonBookGenerator() {
               <button
                 onClick={handleDownloadPdf}
                 disabled={isDownloading}
-                className="w-full bg-[#dfb15b] hover:bg-[#b88a3e] text-[#0d0b0a] font-bold py-3 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                className="w-full min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-gray-900 font-bold py-3 px-4 rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-soft disabled:opacity-50"
               >
                 {isDownloading ? (
                   <>⏳ Generando PDF...</>
@@ -1047,34 +1047,37 @@ export default function LessonBookGenerator() {
         </div>
 
         {/* MAIN AREA: Multi-step forms & preview */}
-        <div className="lg:col-span-9">
+        <div className="w-full lg:col-span-9">
           
           {/* STEP 1: PARAMETER SETUP */}
           {step === 1 && (
-            <div className="bg-stone-950/40 border border-stone-800/80 rounded-3xl p-6 md:p-8 space-y-6">
-              <h2 className="text-xl font-heading text-[#dfb15b] font-bold">Parámetros del Libro</h2>
+            <div className="bg-white shadow-soft border-l-4 border-primary rounded-2xl p-6 md:p-8 space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-gray-900 font-bold">1</div>
+                <h2 className="text-xl font-heading text-text-primary font-bold">Parámetros del Libro</h2>
+              </div>
               <form onSubmit={handleGeneratePlan} className="space-y-6">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-xs text-[#78716c] block font-bold">Tema o Libro Bíblico General</label>
+                    <label className="text-sm text-text-primary block font-medium">Tema o Libro Bíblico General</label>
                     <input
                       type="text"
                       placeholder="Ej: Daniel y la Soberanía de Dios, Vida de Jesús"
                       value={topic}
                       onChange={(e) => setTopic(e.target.value)}
                       required
-                      className="w-full bg-stone-900 border border-stone-800 rounded-xl px-4 py-3 text-sm text-stone-200 outline-none focus:border-[#dfb15b]"
+                      className="w-full min-h-[44px] bg-white border border-border rounded-xl px-4 py-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-xs text-[#78716c] block font-bold">Nº de Lecciones</label>
+                      <label className="text-sm text-text-primary block font-medium">Nº de Lecciones</label>
                       <select
                         value={lessonCount}
                         onChange={(e) => setLessonCount(parseInt(e.target.value))}
-                        className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3 py-3 text-sm text-stone-200 outline-none focus:border-[#dfb15b] cursor-pointer"
+                        className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
                       >
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(c => (
                           <option key={c} value={c}>{c} {c === 1 ? 'lección' : 'lecciones'}</option>
@@ -1083,11 +1086,11 @@ export default function LessonBookGenerator() {
                     </div>
 
                     <div className="space-y-2">
-                      <label className="text-xs text-[#78716c] block font-bold">Grupo de Edad</label>
+                      <label className="text-sm text-text-primary block font-medium">Grupo de Edad</label>
                       <select
                         value={ageGroup}
                         onChange={(e) => setAgeGroup(e.target.value)}
-                        className="w-full bg-stone-900 border border-stone-800 rounded-xl px-3 py-3 text-sm text-stone-200 outline-none focus:border-[#dfb15b] cursor-pointer"
+                        className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent cursor-pointer"
                       >
                         <option>Cunas (0-3)</option>
                         <option>Principiantes (4-6)</option>
@@ -1100,18 +1103,18 @@ export default function LessonBookGenerator() {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs text-[#78716c] block font-bold">Enfoque Personalizado o Doctrina Específica</label>
+                  <label className="text-sm text-text-primary block font-medium">Enfoque Personalizado o Doctrina Específica</label>
                   <textarea
                     rows={4}
                     placeholder="Instrucciones adicionales para la IA sobre qué puntos enfatizar..."
                     value={customFocus}
                     onChange={(e) => setCustomFocus(e.target.value)}
-                    className="w-full bg-stone-900 border border-stone-800 rounded-xl px-4 py-3 text-sm text-stone-200 outline-none focus:border-[#dfb15b]"
+                    className="w-full bg-white border border-border rounded-xl px-4 py-3 text-sm text-text-primary outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                   />
                 </div>
 
                 {planningError && (
-                  <div className="bg-red-950/20 border border-red-800/80 text-red-400 p-4 rounded-xl text-xs">
+                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-xs">
                     ⚠️ {planningError}
                   </div>
                 )}
@@ -1119,7 +1122,7 @@ export default function LessonBookGenerator() {
                 <button
                   type="submit"
                   disabled={isPlanning}
-                  className="bg-[#dfb15b] hover:bg-[#b88a3e] text-[#0d0b0a] transition-all px-6 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-gray-900 transition-all px-6 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-soft disabled:opacity-50"
                 >
                   {isPlanning ? (
                     <>⏳ Planificando Currículum...</>
@@ -1133,16 +1136,19 @@ export default function LessonBookGenerator() {
 
           {/* STEP 2: EDIT PLAN OUTLINE */}
           {step === 2 && (
-            <div className="bg-stone-950/40 border border-stone-800/80 rounded-3xl p-6 md:p-8 space-y-6">
+            <div className="bg-white shadow-soft border-l-4 border-primary rounded-2xl p-6 md:p-8 space-y-6">
               <div>
-                <h2 className="text-xl font-heading text-[#dfb15b] font-bold">Esquema de Temas Sugerido</h2>
-                <p className="text-xs font-serif text-[#78716c] mt-1">Revisa, edita o cambia cualquier título y pasaje bíblico antes de iniciar la generación en bloque de todas las lecciones.</p>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-gray-900 font-bold">2</div>
+                  <h2 className="text-xl font-heading text-text-primary font-bold">Esquema de Temas Sugerido</h2>
+                </div>
+                <p className="text-xs font-serif text-text-secondary mt-1">Revisa, edita o cambia cualquier título y pasaje bíblico antes de iniciar la generación en bloque de todas las lecciones.</p>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
-                    <tr className="border-b border-stone-800 text-[#dfb15b]">
+                    <tr className="border-b border-border text-primary-dark">
                       <th className="py-3 px-2 w-16 text-center">Lección</th>
                       <th className="py-3 px-3">Título Sugerido</th>
                       <th className="py-3 px-3 w-48">Pasaje Bíblico (RVR1960)</th>
@@ -1151,14 +1157,14 @@ export default function LessonBookGenerator() {
                   </thead>
                   <tbody>
                     {editedPlan.map((item, index) => (
-                      <tr key={index} className="border-b border-stone-900 hover:bg-stone-900/20 transition-all">
-                        <td className="py-3 px-2 text-center font-bold text-[#dfb15b]">{item.lessonNumber}</td>
+                      <tr key={index} className="border-b border-border hover:bg-amber-50 transition-all">
+                        <td className="py-3 px-2 text-center font-bold text-primary-dark">{item.lessonNumber}</td>
                         <td className="py-2 px-2">
                           <input
                             type="text"
                             value={item.title}
                             onChange={(e) => handlePlanCellEdit(index, 'title', e.target.value)}
-                            className="w-full bg-stone-900/60 border border-stone-800 rounded px-2 py-1 text-xs text-stone-200"
+                            className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                           />
                         </td>
                         <td className="py-2 px-2">
@@ -1166,7 +1172,7 @@ export default function LessonBookGenerator() {
                             type="text"
                             value={item.passage}
                             onChange={(e) => handlePlanCellEdit(index, 'passage', e.target.value)}
-                            className="w-full bg-stone-900/60 border border-stone-800 rounded px-2 py-1 text-xs text-stone-200"
+                            className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                           />
                         </td>
                         <td className="py-2 px-2">
@@ -1174,7 +1180,7 @@ export default function LessonBookGenerator() {
                             type="text"
                             value={item.emphasis}
                             onChange={(e) => handlePlanCellEdit(index, 'emphasis', e.target.value)}
-                            className="w-full bg-stone-900/60 border border-stone-800 rounded px-2 py-1 text-xs text-stone-200"
+                            className="w-full min-h-[44px] bg-white border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                           />
                         </td>
                       </tr>
@@ -1186,13 +1192,13 @@ export default function LessonBookGenerator() {
               <div className="flex gap-4">
                 <button
                   onClick={handleStartBatchGeneration}
-                  className="bg-[#dfb15b] hover:bg-[#b88a3e] text-[#0d0b0a] font-bold px-6 py-3 rounded-xl text-xs transition-all cursor-pointer"
+                  className="min-h-[44px] hover-lift bg-gradient-to-br from-primary to-accent text-gray-900 font-bold px-6 py-3 rounded-xl text-xs transition-all cursor-pointer shadow-soft"
                 >
                   🚀 Iniciar Generación en Bloque
                 </button>
                 <button
                   onClick={() => setStep(1)}
-                  className="bg-stone-900 hover:bg-stone-800 border border-stone-800 text-stone-400 font-bold px-6 py-3 rounded-xl text-xs transition-all cursor-pointer"
+                  className="min-h-[44px] bg-white hover:bg-surface-warm border border-border text-text-secondary font-bold px-6 py-3 rounded-xl text-xs transition-all cursor-pointer"
                 >
                   ⬅ Volver a Parámetros
                 </button>
@@ -1202,17 +1208,20 @@ export default function LessonBookGenerator() {
 
           {/* STEP 3: SEQUENTIAL BATCH GENERATION PROGRESS */}
           {step === 3 && (
-            <div className="bg-stone-950/40 border border-stone-800/80 rounded-3xl p-6 md:p-8 space-y-6">
+            <div className="bg-white shadow-soft border-l-4 border-primary rounded-2xl p-6 md:p-8 space-y-6">
               <div>
-                <h2 className="text-xl font-heading text-[#dfb15b] font-bold">Proceso de Generación del Libro</h2>
-                <p className="text-xs font-serif text-[#78716c] mt-1">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-gray-900 font-bold">3</div>
+                  <h2 className="text-xl font-heading text-text-primary font-bold">Proceso de Generación del Libro</h2>
+                </div>
+                <p className="text-xs font-serif text-text-secondary mt-1">
                   Generando secuencialmente cada clase curricular. La barra de progreso y el log de operaciones se actualizarán a medida que se completen las solicitudes.
                 </p>
               </div>
 
               {/* Progress bar */}
               <div className="space-y-2">
-                <div className="flex justify-between text-xs font-bold text-[#dfb15b]">
+                <div className="flex justify-between text-xs font-bold text-primary-dark">
                   <span>Generando lecciones...</span>
                   <span>
                     {Object.keys(activeSession?.lessons || {}).length} de {editedPlan.length} completadas ({Math.round(
@@ -1220,30 +1229,30 @@ export default function LessonBookGenerator() {
                     )}%)
                   </span>
                 </div>
-                <div className="w-full bg-stone-900 rounded-full h-4 overflow-hidden border border-stone-800">
+                <div className="w-full bg-surface-warm rounded-full h-4 overflow-hidden border border-border">
                   <div
                     style={{
                       width: `${(Object.keys(activeSession?.lessons || {}).length / editedPlan.length) * 100}%`
                     }}
-                    className="bg-[#dfb15b] h-full transition-all duration-500 rounded-full"
+                    className="bg-gradient-to-r from-primary to-accent h-full transition-all duration-500 rounded-full"
                   />
                 </div>
               </div>
 
               {/* Streaming Content Display */}
               {isGeneratingBatch && currentGeneratingIndex >= 0 && (
-                <div className="bg-stone-900/60 border border-stone-800/80 rounded-2xl p-4 flex flex-col space-y-2">
-                  <span className="text-[10px] text-[#dfb15b] font-bold uppercase tracking-wider">
+                <div className="bg-surface-warm border border-border rounded-2xl p-4 flex flex-col space-y-2">
+                  <span className="text-[10px] text-primary-dark font-bold uppercase tracking-wider">
                     Transmisión en Vivo: Lección {editedPlan[currentGeneratingIndex].lessonNumber} - "{editedPlan[currentGeneratingIndex].title}"
                   </span>
-                  <div className="max-h-48 overflow-y-auto font-mono text-xs text-stone-400 chat-scroll bg-stone-950/60 p-3 rounded-lg leading-relaxed">
+                  <div className="max-h-48 overflow-y-auto font-mono text-xs text-text-secondary chat-scroll bg-white p-3 rounded-lg leading-relaxed">
                     {streamingText ? (
                       <>
                         {streamingText}
                         <span className="typing-cursor ml-1">|</span>
                       </>
                     ) : (
-                      <span className="italic text-stone-600">Iniciando streaming del modelo...</span>
+                      <span className="italic text-text-secondary">Iniciando streaming del modelo...</span>
                     )}
                   </div>
                 </div>
@@ -1251,8 +1260,8 @@ export default function LessonBookGenerator() {
 
               {/* Operation Logs */}
               <div className="space-y-2">
-                <span className="text-xs text-[#78716c] font-bold">Bitácora de Generación:</span>
-                <div className="bg-stone-950/80 border border-stone-900 rounded-2xl p-4 max-h-40 overflow-y-auto chat-scroll space-y-2 font-mono text-[10px] text-stone-500">
+                <span className="text-xs text-text-secondary font-bold">Bitácora de Generación:</span>
+                <div className="bg-surface-warm border border-border rounded-2xl p-4 max-h-40 overflow-y-auto chat-scroll space-y-2 font-mono text-[10px] text-text-secondary">
                   {generationLogs.map((log, index) => (
                     <div key={index}>{log}</div>
                   ))}
@@ -1261,11 +1270,11 @@ export default function LessonBookGenerator() {
               </div>
 
               {batchError && (
-                <div className="bg-red-950/20 border border-red-800/80 text-red-400 p-4 rounded-xl text-xs space-y-2">
+                <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-xs space-y-2">
                   <p>⚠️ Error: {batchError}</p>
                   <button
                     onClick={handleRetryBatch}
-                    className="bg-red-900 hover:bg-red-800 text-white font-bold px-4 py-2 rounded-lg text-[10px]"
+                     className="min-h-[44px] bg-red-700 hover:bg-red-800 text-white font-bold px-4 py-2 rounded-lg text-[10px]"
                   >
                     Reintentar desde el punto de fallo
                   </button>
@@ -1279,17 +1288,18 @@ export default function LessonBookGenerator() {
             <div className="space-y-6">
               
               {/* Tabs list for individual lessons */}
-              <div className="flex flex-wrap gap-2 border-b border-stone-800 pb-3">
+              <div className="bg-white shadow-soft rounded-2xl p-2">
+                <div className="flex flex-col lg:flex-row gap-2">
                 {activeSession.plan.map((item) => {
                   const lesson = activeSession.lessons[item.lessonNumber];
                   return (
                     <button
                       key={item.lessonNumber}
                       onClick={() => setActiveLessonTab(item.lessonNumber)}
-                      className={`px-4 py-2 rounded-xl text-xs transition-all font-body cursor-pointer flex items-center gap-2 ${
+                      className={`flex-1 min-h-[44px] px-4 py-3 text-sm transition-all font-body cursor-pointer flex items-center justify-center gap-2 border-b-2 ${
                         activeLessonTab === item.lessonNumber
-                          ? 'bg-[#dfb15b] text-[#0d0b0a] font-bold'
-                          : 'bg-stone-900/60 border border-stone-800 text-stone-400 hover:text-stone-200'
+                          ? 'text-primary-dark border-primary font-bold'
+                          : 'text-text-secondary border-transparent hover:text-text-primary'
                       }`}
                     >
                       <span>Clase {item.lessonNumber}</span>
@@ -1297,11 +1307,15 @@ export default function LessonBookGenerator() {
                     </button>
                   );
                 })}
+                </div>
               </div>
 
               {/* Preview Canvas showing selected lesson sheets */}
-              <div className="bg-stone-950/40 border border-stone-800/80 rounded-3xl p-6 md:p-8 flex flex-col items-center">
-                <span className="text-xs text-[#78716c] mb-4 font-bold font-mono">VISTA PREVIA DEL DOCUMENTO A4 FISICO</span>
+              <div className="bg-white shadow-soft border-l-4 border-primary rounded-2xl p-6 md:p-8 flex flex-col items-center">
+                <div className="flex items-center gap-4 mb-4 self-start">
+                  <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-accent text-gray-900 font-bold">4</div>
+                  <span className="text-xs text-text-secondary font-bold font-mono">VISTA PREVIA DEL DOCUMENTO A4 FISICO</span>
+                </div>
                 
                 {/* Print element wrapper */}
                 <div 
@@ -1315,7 +1329,7 @@ export default function LessonBookGenerator() {
                     const rawLesson = activeSession.lessons[activeLessonTab];
                     if (!planItem || !rawLesson?.isComplete) {
                       return (
-                        <div className="p-8 text-center text-stone-500 italic">
+                           <div className="p-8 text-center text-text-secondary italic">
                           Cargando contenido de la lección...
                         </div>
                       );
