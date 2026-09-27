@@ -4,19 +4,23 @@ import { getClient } from "../../config/aiProvider";
 import { parseChatMetadata } from "../../config/parseChatMetadata";
 
 export const POST: APIRoute = async ({ request }) => {
-  let client: ReturnType<typeof getClient>;
-  try {
-    client = getClient("chat");
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error de configuración del proveedor";
-    return new Response(JSON.stringify({ error: message }), { status: 500 });
-  }
-
   try {
     const body = await request.json();
     const question = (body.question || body.message || "").trim();
     const history = Array.isArray(body.history) ? body.history : [];
+    const sessionId =
+      typeof body.sessionId === "string" && body.sessionId.trim()
+        ? body.sessionId.trim()
+        : undefined;
+
+    let client: ReturnType<typeof getClient>;
+    try {
+      client = getClient("chat", undefined, sessionId);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Error de configuración del proveedor";
+      return new Response(JSON.stringify({ error: message }), { status: 500 });
+    }
 
     if (!question) {
       return new Response(

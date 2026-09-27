@@ -28,6 +28,23 @@ describe("aiProvider.getClient", () => {
     assert.equal(client.apiKey, "process-key-456");
   });
 
+  it("configures default x-opencode-session and User-Agent headers", () => {
+    const metaEnv = { [GO_KEY_ENV]: "meta-key-123" };
+    const client = getClient("chat", metaEnv);
+    const headers = (client as any)._options?.defaultHeaders;
+
+    assert.equal(headers?.["x-opencode-session"], "elias-chat");
+    assert.equal(headers?.["User-Agent"], "elias-agent/1.0");
+  });
+
+  it("uses custom sessionId when provided", () => {
+    const metaEnv = { [GO_KEY_ENV]: "meta-key-123" };
+    const client = getClient("chat", metaEnv, "session-abc-123");
+    const headers = (client as any)._options?.defaultHeaders;
+
+    assert.equal(headers?.["x-opencode-session"], "session-abc-123");
+  });
+
   it("throws an error naming the missing env var when no key is configured", () => {
     assert.throws(
       () => getClient("lessonBookPlan"),

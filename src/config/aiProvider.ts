@@ -51,17 +51,24 @@ export function resolveKey(
 /**
  * Create an OpenAI-compatible client for the given endpoint group.
  *
- * @param endpoint which `aiConfig` group to configure the client from
- * @param metaEnv  optional override for `import.meta.env` (testability)
+ * @param endpoint  which `aiConfig` group to configure the client from
+ * @param metaEnv   optional override for `import.meta.env` (testability)
+ * @param sessionId optional session identifier for OpenCode routing and prompt caching
  */
 export function getClient(
   endpoint: EndpointKey,
   metaEnv?: MetaEnv,
+  sessionId?: string,
 ): OpenAI {
   const config: EndpointConfig = aiConfig[endpoint];
 
   return new OpenAI({
     baseURL: config.baseURL,
     apiKey: resolveKey(config.apiKeyEnv, metaEnv),
+    defaultHeaders: {
+      "x-opencode-session": sessionId || `elias-${endpoint}`,
+      "User-Agent": "elias-agent/1.0",
+    },
   });
 }
+

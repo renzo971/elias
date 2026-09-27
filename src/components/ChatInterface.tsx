@@ -474,7 +474,10 @@ export default function ChatInterface() {
       // Título sugerido para el primer mensaje de la sesión
       const sessionTitle = isNewSession ? generateTitleFromQuery(userText) : undefined;
 
-      await chatWithElias(userText, history, (content: string, reasoning: string, data?: any) => {
+      await chatWithElias(
+        userText,
+        history,
+        (content: string, reasoning: string, data?: any) => {
         let finalMessages = [];
         if (data?.is_final) {
           finalMessages = messagesWithAssistant.map(msg =>
@@ -509,7 +512,7 @@ export default function ChatInterface() {
 
         // Guardado en tiempo real de los chunks
         saveSessionMessages(activeSessionId!, finalMessages, sessionTitle);
-      });
+      }, activeSessionId || undefined);
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => prev.map(msg =>
@@ -566,7 +569,10 @@ export default function ChatInterface() {
 
       const sessionTitle = isNewSession ? generateTitleFromQuery(text) : undefined;
 
-      await chatWithElias(text, history, (content: string, reasoning: string, data?: any) => {
+      await chatWithElias(
+        text,
+        history,
+        (content: string, reasoning: string, data?: any) => {
         let finalMessages = [];
         if (data?.is_final) {
           finalMessages = messagesWithAssistant.map(msg =>
@@ -598,7 +604,7 @@ export default function ChatInterface() {
         );
         setMessages(finalMessages);
         saveSessionMessages(activeSessionId!, finalMessages, sessionTitle);
-      });
+      }, activeSessionId || undefined);
     } catch (error) {
       console.error('Error:', error);
       setMessages(prev => prev.map(msg =>
