@@ -24,15 +24,6 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
-  let client: ReturnType<typeof getClient>;
-  try {
-    client = getClient("sundaySchool");
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error de configuración del proveedor";
-    return new Response(JSON.stringify({ error: message }), { status: 500 });
-  }
-
   try {
     const body = await request.json();
     const { ageGroup, topic, resourceType, customDetails } = body;
@@ -42,6 +33,20 @@ export const POST: APIRoute = async ({ request }) => {
         JSON.stringify({ error: "Faltan parámetros requeridos (topic)" }),
         { status: 400 },
       );
+    }
+
+    const sessionId =
+      typeof body.sessionId === "string" && body.sessionId.trim()
+        ? body.sessionId.trim()
+        : `elias-ss-${Date.now()}`;
+
+    let client: ReturnType<typeof getClient>;
+    try {
+      client = getClient("sundaySchool", undefined, sessionId);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Error de configuración del proveedor";
+      return new Response(JSON.stringify({ error: message }), { status: 500 });
     }
 
     const prompt = `Por favor, genera el recurso de Escuela Dominical con las etiquetas del sistema.

@@ -166,7 +166,7 @@ export const aiConfig: AIConfig = {
   chat: {
     model: DEEPSEEK_V4_FLASH_MODEL,
     temperature: 0.3,
-    max_tokens: 4000,
+    max_tokens: 6000,
     systemPrompt: CHAT_SYSTEM_PROMPT,
     baseURL: OPENCODE_GO_BASE_URL,
     apiKeyEnv: OPENCODE_GO_API_KEY_ENV,
@@ -175,7 +175,7 @@ export const aiConfig: AIConfig = {
   sundaySchool: {
     model: DEEPSEEK_V4_FLASH_MODEL,
     temperature: 0.4,
-    max_tokens: 2800,
+    max_tokens: 8000,
     systemPrompt: SUNDAY_SCHOOL_SYSTEM_PROMPT,
     baseURL: OPENCODE_GO_BASE_URL,
     apiKeyEnv: OPENCODE_GO_API_KEY_ENV,
@@ -184,7 +184,7 @@ export const aiConfig: AIConfig = {
   lessonBookPlan: {
     model: DEEPSEEK_V4_FLASH_MODEL,
     temperature: 0.3,
-    max_tokens: 2000,
+    max_tokens: 8000,
     systemPrompt: LESSON_BOOK_PLAN_SYSTEM_PROMPT,
     baseURL: OPENCODE_GO_BASE_URL,
     apiKeyEnv: OPENCODE_GO_API_KEY_ENV,

@@ -1,20 +1,7 @@
 import type { APIRoute } from "astro";
 import { aiConfig } from "../../../config/aiConfig";
 import { getClient } from "../../../config/aiProvider";
-
 export const POST: APIRoute = async ({ request }) => {
-  let client: ReturnType<typeof getClient>;
-  try {
-    client = getClient("lessonBookPlan");
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Error de configuración del proveedor";
-    return new Response(
-      JSON.stringify({ error: message }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
-  }
-
   try {
     const body = await request.json();
     const { topic, lessonCount, ageGroup, customFocus } = body;
@@ -23,6 +10,23 @@ export const POST: APIRoute = async ({ request }) => {
       return new Response(
         JSON.stringify({ error: "Faltan parámetros requeridos (topic, lessonCount, ageGroup)" }),
         { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
+
+    const sessionId =
+      typeof body.sessionId === "string" && body.sessionId.trim()
+        ? body.sessionId.trim()
+        : `elias-lb-${Date.now()}`;
+
+    let client: ReturnType<typeof getClient>;
+    try {
+      client = getClient("lessonBookPlan", undefined, sessionId);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Error de configuración del proveedor";
+      return new Response(
+        JSON.stringify({ error: message }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
       );
     }
 
