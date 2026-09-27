@@ -159,7 +159,7 @@ const OPENCODE_GO_BASE_URL = "https://opencode.ai/zen/go/v1";
 const OPENCODE_GO_API_KEY_ENV = "OPENCODE_GO_API_KEY";
 
 /** Model ID for DeepSeek V4 Flash on the OpenCode Go gateway. */
-const DEEPSEEK_V4_FLASH_MODEL = "deepseek-v4-flash";
+const DEEPSEEK_V4_FLASH_MODEL = "deepseek-v4.1-flash";
 
 /** Centralized AI configuration — the single source of truth for model parameters. */
 export const aiConfig: AIConfig = {
