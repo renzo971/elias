@@ -54,20 +54,45 @@ export async function generateLessonBookPlan(
 }
 
 /**
+ * Valida si el contenido generado de una lección es completo y suficiente.
+ */
+export function validateLessonContent(content: string): boolean {
+  if (!content || content.trim().length < 600) return false;
+  const hasTitle = content.includes("[TITULO]");
+  const hasPassage = content.includes("[PASAGE]");
+  const hasLesson = content.includes("[LECCION]");
+  const hasChallenge = content.includes("[DESAFIO_TITULO]") || content.includes("[DESAFIO_TEXTO]");
+
+  if (!hasTitle || !hasPassage || !hasLesson || !hasChallenge) return false;
+
+  const lessonMatch = content.match(/\[LECCION\]\s*([\s\S]*?)(?=\[|$)/);
+  if (!lessonMatch || lessonMatch[1].trim().length < 150) return false;
+
+  return true;
+}
+
+/**
  * Genera una lección individual consumiendo el SSE stream del backend.
  * Reutiliza el endpoint /api/sunday-school enviando la información estructurada.
+ * Incluye validación de completitud y reintento automático si el contenido queda trunco.
  */
 export async function generateIndividualLesson(
   lessonNumber: number,
   lessonPlan: LessonPlanItem,
   ageGroup: string,
-  onChunk: (text: string, imageBase64?: string) => void
+  onChunk: (text: string, imageBase64?: string) => void,
+  sessionId?: string,
+  attempt: number = 1
 ): Promise<LessonContent> {
-  const customDetails = `Lección número ${lessonNumber}.
+  const isRetry = attempt > 1;
+  const customDetails = `Lección número ${lessonNumber} de una serie para Escuela Dominical.
 Título: ${lessonPlan.title}.
 Pasaje bíblico principal: ${lessonPlan.passage}.
-Enfoque de la lección: ${lessonPlan.emphasis}.
-Genera el recurso para esta lección utilizando el formato de etiquetas delimitadoras.`;
+Enfoque teológico clave: ${lessonPlan.emphasis}.
+INSTRUCCIONES IMPORTANTES:
+1. La sección [LECCION] debe ser un bosquejo didáctico y narrativo completo para el maestro (entre 250 y 350 palabras), con al menos 3 puntos o subtítulos claros y aplicaciones prácticas para la edad.
+2. Completa TODAS las etiquetas delimitadoras del sistema ([NUMERO_ESCENA], [TITULO], [PASAGE], [VERSICULO_REF], [VERSICULO_TEXTO], [LECCION], [MATERIALES], [INSTRUCCIONES], [JUEGO_TITULO], [JUEGO_TEXTO], [DESAFIO_TITULO], [DESAFIO_TEXTO], [ASISTENCIA], [ALUMNO_TIPO_JUEGO], [ALUMNO_CONTENIDO], [ALUMNO_INSTRUCCIONES], [ALUMNO_IMAGEN_PROMPT]).
+${isRetry ? "3. ATENCIÓN: El intento anterior quedó incompleto o muy corto. Asegúrate de desarrollar el contenido exhaustivamente sin omitir ninguna sección." : ""}`;
 
   const response = await fetch("/api/sunday-school", {
     method: "POST",
@@ -79,6 +104,7 @@ Genera el recurso para esta lección utilizando el formato de etiquetas delimita
       topic: `${lessonPlan.passage}: ${lessonPlan.title}`,
       resourceType: "Folleto",
       customDetails,
+      sessionId: sessionId || `elias-lesson-${lessonNumber}-${Date.now()}`,
     }),
   });
 
@@ -151,10 +177,24 @@ Genera el recurso para esta lección utilizando el formato de etiquetas delimita
     }
   }
 
+  const isValid = validateLessonContent(content);
+  if (!isValid && attempt < 2) {
+    console.warn(`[LessonBook] Lección ${lessonNumber} incompleta (longitud: ${content.length}). Reintentando automáticamente...`);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    return generateIndividualLesson(
+      lessonNumber,
+      lessonPlan,
+      ageGroup,
+      onChunk,
+      sessionId,
+      attempt + 1
+    );
+  }
+
   return {
     content,
     alumno_imagen_base64,
-    isComplete: true,
+    isComplete: isValid,
   };
 }
 

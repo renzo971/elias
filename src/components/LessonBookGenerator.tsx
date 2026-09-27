@@ -382,6 +382,7 @@ export default function LessonBookGenerator() {
   const [printMargin, setPrintMargin] = useState<'standard' | 'compact' | 'wide'>('standard');
   const [customHeader, setCustomHeader] = useState('');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isRegeneratingSingle, setIsRegeneratingSingle] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const pdfBookRef = useRef<HTMLDivElement>(null);
@@ -487,6 +488,9 @@ export default function LessonBookGenerator() {
 
     try {
       for (let i = 0; i < editedPlan.length; i++) {
+        if (i > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+        }
         const item = editedPlan[i];
         setCurrentGeneratingIndex(i);
         setStreamingText('');
@@ -498,7 +502,8 @@ export default function LessonBookGenerator() {
           ageGroup,
           (text) => {
             if (text) setStreamingText(prev => prev + text);
-          }
+          },
+          `elias-book-${newSession.id}-lesson-${item.lessonNumber}`
         );
 
         sessionToUpdate.lessons[item.lessonNumber] = lessonResult;
@@ -546,6 +551,9 @@ export default function LessonBookGenerator() {
 
     try {
       for (let i = startIndex; i < editedPlan.length; i++) {
+        if (i > startIndex) {
+          await new Promise((resolve) => setTimeout(resolve, 1200));
+        }
         const item = editedPlan[i];
         setCurrentGeneratingIndex(i);
         setStreamingText('');
@@ -557,7 +565,8 @@ export default function LessonBookGenerator() {
           ageGroup,
           (text) => {
             if (text) setStreamingText(prev => prev + text);
-          }
+          },
+          `elias-retry-${sessionToUpdate.id}-lesson-${item.lessonNumber}-${Date.now()}`
         );
 
         sessionToUpdate.lessons[item.lessonNumber] = lessonResult;
@@ -574,6 +583,45 @@ export default function LessonBookGenerator() {
       console.error(err);
       setBatchError(err.message || 'Error en el reintento de generación.');
       setIsGeneratingBatch(false);
+    }
+  };
+
+  // Regenerar individualmente una única clase del libro
+  const handleRegenerateSingleLesson = async (lessonNum: number) => {
+    if (!activeSession || isRegeneratingSingle) return;
+    const planItem = activeSession.plan.find(p => p.lessonNumber === lessonNum);
+    if (!planItem) return;
+
+    setIsRegeneratingSingle(true);
+    setStreamingText('');
+    try {
+      const lessonResult = await generateIndividualLesson(
+        lessonNum,
+        planItem,
+        activeSession.ageGroup,
+        (text) => {
+          if (text) setStreamingText(prev => prev + text);
+        },
+        `elias-single-${activeSession.id}-lesson-${lessonNum}-${Date.now()}`
+      );
+
+      const sessionToUpdate: LessonBookSession = {
+        ...activeSession,
+        lessons: {
+          ...activeSession.lessons,
+          [lessonNum]: lessonResult,
+        },
+        lastInteraction: new Date().toISOString(),
+      };
+
+      setActiveSession(sessionToUpdate);
+      const updatedList = saveLessonBookSession(sessionToUpdate);
+      setSessions(updatedList);
+    } catch (err: any) {
+      console.error("Error regenerando lección individual:", err);
+      alert("Error al regenerar la lección: " + (err.message || err));
+    } finally {
+      setIsRegeneratingSingle(false);
     }
   };
 
@@ -1279,24 +1327,43 @@ export default function LessonBookGenerator() {
             <div className="space-y-6">
               
               {/* Tabs list for individual lessons */}
-              <div className="flex flex-wrap gap-2 border-b border-stone-800 pb-3">
-                {activeSession.plan.map((item) => {
-                  const lesson = activeSession.lessons[item.lessonNumber];
-                  return (
-                    <button
-                      key={item.lessonNumber}
-                      onClick={() => setActiveLessonTab(item.lessonNumber)}
-                      className={`px-4 py-2 rounded-xl text-xs transition-all font-body cursor-pointer flex items-center gap-2 ${
-                        activeLessonTab === item.lessonNumber
-                          ? 'bg-[#dfb15b] text-[#0d0b0a] font-bold'
-                          : 'bg-stone-900/60 border border-stone-800 text-stone-400 hover:text-stone-200'
-                      }`}
-                    >
-                      <span>Clase {item.lessonNumber}</span>
-                      {lesson?.isComplete && <span className="text-[10px]">✓</span>}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-stone-800 pb-3">
+                <div className="flex flex-wrap gap-2">
+                  {activeSession.plan.map((item) => {
+                    const lesson = activeSession.lessons[item.lessonNumber];
+                    const isDone = lesson?.isComplete && lesson?.content && lesson.content.length >= 500;
+                    return (
+                      <button
+                        key={item.lessonNumber}
+                        onClick={() => setActiveLessonTab(item.lessonNumber)}
+                        className={`px-4 py-2 rounded-xl text-xs transition-all font-body cursor-pointer flex items-center gap-2 ${
+                          activeLessonTab === item.lessonNumber
+                            ? 'bg-[#dfb15b] text-[#0d0b0a] font-bold shadow-md shadow-[#dfb15b]/20'
+                            : isDone
+                            ? 'bg-stone-900/60 border border-stone-800 text-stone-300 hover:text-white'
+                            : 'bg-amber-950/20 border border-amber-800/40 text-amber-400 hover:bg-amber-900/30'
+                        }`}
+                      >
+                        <span>Clase {item.lessonNumber}</span>
+                        {isDone ? (
+                          <span className="text-[10px] text-emerald-400 font-bold">✓</span>
+                        ) : (
+                          <span className="text-[10px] text-amber-400">⚠️</span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <button
+                  onClick={() => handleRegenerateSingleLesson(activeLessonTab)}
+                  disabled={isRegeneratingSingle}
+                  className="px-3.5 py-1.5 rounded-xl bg-stone-900 border border-stone-700/80 hover:border-[#dfb15b]/50 text-stone-300 hover:text-[#dfb15b] text-xs font-body transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                  title="Vuelve a generar únicamente el contenido de esta clase"
+                >
+                  <span className={isRegeneratingSingle ? "animate-spin" : ""}>🔄</span>
+                  <span>{isRegeneratingSingle ? "Regenerando..." : `Regenerar Clase ${activeLessonTab}`}</span>
+                </button>
               </div>
 
               {/* Preview Canvas showing selected lesson sheets */}
@@ -1313,10 +1380,26 @@ export default function LessonBookGenerator() {
                   {(() => {
                     const planItem = activeSession.plan.find(p => p.lessonNumber === activeLessonTab);
                     const rawLesson = activeSession.lessons[activeLessonTab];
-                    if (!planItem || !rawLesson?.isComplete) {
+                    if (!planItem) return null;
+
+                    if (!rawLesson || !rawLesson.isComplete || !rawLesson.content || rawLesson.content.length < 500) {
                       return (
-                        <div className="p-8 text-center text-stone-500 italic">
-                          Cargando contenido de la lección...
+                        <div className="p-12 text-center flex flex-col items-center gap-4 bg-stone-900/60 rounded-3xl border border-stone-800 my-8">
+                          <span className="text-3xl">⚠️</span>
+                          <h4 className="text-base font-bold text-stone-200 font-heading">
+                            Contenido incompleto en Clase {activeLessonTab}
+                          </h4>
+                          <p className="text-xs text-stone-400 max-w-md">
+                            Esta clase no se generó por completo o contiene muy poco texto. Podés regenerarla individualmente ahora mismo con el botón de abajo.
+                          </p>
+                          <button
+                            onClick={() => handleRegenerateSingleLesson(activeLessonTab)}
+                            disabled={isRegeneratingSingle}
+                            className="mt-2 px-5 py-2.5 rounded-xl bg-[#dfb15b] hover:bg-[#b88a3e] text-[#0d0b0a] font-bold text-xs transition-all flex items-center gap-2 cursor-pointer shadow-lg shadow-[#dfb15b]/10 disabled:opacity-50"
+                          >
+                            <span className={isRegeneratingSingle ? "animate-spin" : ""}>🔄</span>
+                            <span>{isRegeneratingSingle ? "Generando lección..." : `Generar contenido para Clase ${activeLessonTab}`}</span>
+                          </button>
                         </div>
                       );
                     }
